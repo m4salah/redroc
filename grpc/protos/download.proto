@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package grpc;
+option go_package = "github.com/m4slah/redroc/proto";
+
+// when a user requests to download, we'll need the photo_uid to get the full
+// picture to the user will need to update metadata accordingly, use
+// UpdateMetadataRequest in metadata.proto
+message DownloadPhotoRequest {
+  string img_name = 1;
+}
+
+message DownloadPhotoResponse {
+  bytes img_blob = 1;
+}
+
+service DownloadPhoto {
+  /*
+   * RPC for download a photo
+   */
+  rpc Download(DownloadPhotoRequest) returns (DownloadPhotoResponse);
+}
