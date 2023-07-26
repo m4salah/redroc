@@ -8,3 +8,6 @@ proto-download:
 
 build-download:
 	go build -o bin/download grpc/services/download/main.go
+
+build-server:
+	go build -o bin/server restful/cmd/server/main.go
