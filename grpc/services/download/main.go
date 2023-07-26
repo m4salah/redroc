@@ -9,6 +9,7 @@ import (
 	pb "github.com/m4salah/redroc/grpc/protos"
 	download "github.com/m4salah/redroc/grpc/services/download/handler"
 	"github.com/m4salah/redroc/grpc/storage"
+	"github.com/m4salah/redroc/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -19,17 +20,6 @@ var (
 	storageBucket = flag.String("storage_bucket", "sre-classroom-image-server_photos-2", "storage bucket to use for storing photos")
 	storageDryRun = flag.Bool("storage_dry_run", false, "disable storage bucket reads")
 )
-
-func createLogger(env string) (*zap.Logger, error) {
-	switch env {
-	case "production":
-		return zap.NewProduction()
-	case "development":
-		return zap.NewDevelopment()
-	default:
-		return zap.NewNop(), nil
-	}
-}
 
 type DownloadServiceRPC struct {
 	pb.UnimplementedDownloadPhotoServer
@@ -49,7 +39,7 @@ func (d *DownloadServiceRPC) Download(ctx context.Context, request *pb.DownloadP
 
 func main() {
 	flag.Parse()
-	logger, err := createLogger(*env)
+	logger, err := util.CreateLogger(*env)
 	if err != nil {
 		fmt.Println("Error setting up the logger:", err)
 		return
