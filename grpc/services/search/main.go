@@ -7,8 +7,8 @@ import (
 	"net"
 
 	pb "github.com/m4salah/redroc/grpc/protos"
-	search "github.com/m4salah/redroc/grpc/services/search/handler"
 	"github.com/m4salah/redroc/grpc/storage"
+	"github.com/m4salah/redroc/grpc/types"
 	"github.com/m4salah/redroc/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -26,7 +26,7 @@ var (
 
 type SearchServiceRPC struct {
 	pb.UnimplementedGetThumbnailServer
-	search.SearchService
+	types.SearchService
 }
 
 func (s *SearchServiceRPC) GetThumbnail(ctx context.Context, request *pb.GetThumbnailImagesRequest) (*pb.GetThumbnailImagesResponse, error) {
@@ -64,7 +64,7 @@ func main() {
 		return
 	}
 	grpcServer := grpc.NewServer()
-	searchService := search.SearchService{Log: logger, MetadataDB: filestore}
+	searchService := types.SearchService{Log: logger, MetadataDB: filestore}
 	pb.RegisterGetThumbnailServer(grpcServer, &SearchServiceRPC{SearchService: searchService})
 
 	logger.Info("starting GRPC server", zap.String("port", *listenPort))

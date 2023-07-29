@@ -11,8 +11,8 @@ import (
 	"time"
 
 	pb "github.com/m4salah/redroc/grpc/protos"
-	upload "github.com/m4salah/redroc/grpc/services/upload/handler"
 	"github.com/m4salah/redroc/grpc/storage"
+	"github.com/m4salah/redroc/grpc/types"
 	"github.com/m4salah/redroc/util"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -36,7 +36,7 @@ var (
 
 type UploadServiceRPC struct {
 	pb.UnimplementedUploadPhotoServer
-	upload.UploadService
+	types.UploadService
 }
 
 func (d *UploadServiceRPC) Upload(ctx context.Context, request *pb.UploadImageRequest) (*pb.UploadImageResponse, error) {
@@ -128,7 +128,7 @@ func main() {
 		return
 	}
 	grpcServer := grpc.NewServer()
-	uploadService := upload.UploadService{DB: bucket, Log: logger, MetadataDB: filestore}
+	uploadService := types.UploadService{DB: bucket, Log: logger, MetadataDB: filestore}
 	pb.RegisterUploadPhotoServer(grpcServer, &UploadServiceRPC{UploadService: uploadService})
 
 	logger.Info("starting GRPC server", zap.String("port", *listenPort))

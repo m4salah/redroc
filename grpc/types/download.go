@@ -1,4 +1,4 @@
-package download
+package types
 
 import (
 	"github.com/m4salah/redroc/grpc/storage"

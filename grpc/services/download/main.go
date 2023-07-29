@@ -7,8 +7,8 @@ import (
 	"net"
 
 	pb "github.com/m4salah/redroc/grpc/protos"
-	download "github.com/m4salah/redroc/grpc/services/download/handler"
 	"github.com/m4salah/redroc/grpc/storage"
+	"github.com/m4salah/redroc/grpc/types"
 	"github.com/m4salah/redroc/util"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -23,7 +23,7 @@ var (
 
 type DownloadServiceRPC struct {
 	pb.UnimplementedDownloadPhotoServer
-	download.DownloadService
+	types.DownloadService
 }
 
 func (d *DownloadServiceRPC) Download(ctx context.Context, request *pb.DownloadPhotoRequest) (*pb.DownloadPhotoResponse, error) {
@@ -55,7 +55,7 @@ func main() {
 		return
 	}
 	grpcServer := grpc.NewServer()
-	downloadService := download.DownloadService{DB: bucket, Log: logger}
+	downloadService := types.DownloadService{DB: bucket, Log: logger}
 	pb.RegisterDownloadPhotoServer(grpcServer, &DownloadServiceRPC{DownloadService: downloadService})
 
 	logger.Info("starting GRPC server", zap.String("port", *listenPort))
