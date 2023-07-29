@@ -19,6 +19,8 @@ type Server struct {
 	server              *http.Server
 	listenAddr          string
 	downloadBackendAddr string
+	uploadBackendAddr   string
+	searchBackendAddr   string
 	connTimeout         time.Duration
 }
 
@@ -27,6 +29,8 @@ type Options struct {
 	Log                 *zap.Logger
 	Port                int
 	DownloadBackendAddr string
+	UploadBackendAddr   string
+	SearchBackendAddr   string
 	ConnTimeout         time.Duration
 }
 
@@ -38,6 +42,8 @@ func New(opts Options) *Server {
 	mux := chi.NewMux()
 	return &Server{
 		downloadBackendAddr: opts.DownloadBackendAddr,
+		uploadBackendAddr:   opts.UploadBackendAddr,
+		searchBackendAddr:   opts.SearchBackendAddr,
 		listenAddr:          address,
 		log:                 opts.Log,
 		mux:                 mux,
