@@ -1,0 +1,13 @@
+FROM golang:alpine AS build
+
+WORKDIR /
+COPY grpc grpc
+COPY util util
+COPY go.* ./
+RUN	go build -ldflags="-s -w" -o bin/search grpc/services/search/main.go
+
+FROM scratch
+
+COPY --from=build /bin/search /bin/search
+
+ENTRYPOINT ["/bin/search", "-listen_port", ":8080"]
