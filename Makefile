@@ -41,3 +41,9 @@ docker-build-server:
 
 docker-run-server: docker-build-server
 	docker run -p 8080:8080 redroc-server:latest
+
+docker-build-download:
+	docker build -t redroc-download -f Dockerfile.download-grpc .
+
+docker-run-download: docker-build-download
+	docker run -p 8080:8080 redroc-download:latest
