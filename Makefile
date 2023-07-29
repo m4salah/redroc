@@ -47,3 +47,15 @@ docker-build-download:
 
 docker-run-download: docker-build-download
 	docker run -p 8080:8080 redroc-download:latest
+
+docker-build-upload:
+	docker build -t redroc-upload -f Dockerfile.upload-grpc .
+
+docker-run-upload: docker-build-upload
+	docker run -p 8080:8080 redroc-upload:latest
+
+docker-build-search:
+	docker build -t redroc-search -f Dockerfile.search-grpc .
+
+docker-run-search: docker-build-search
+	docker run -p 8080:8080 redroc-search:latest
