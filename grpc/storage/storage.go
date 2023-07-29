@@ -1,9 +1,14 @@
 package storage
 
-import "context"
+import (
+	"context"
+)
 
 type MetadataDB interface {
-	Store(ctx context.Context, user, path string) error
+	StorePath(ctx context.Context, path string, timestamp int64) error
+	StorePathWithUser(ctx context.Context, user, path string, timestamp int64) error
+	StoreLatest(ctx context.Context, index uint32, latest, objName string) error
+	GetThumbnails(ctx context.Context, thumbnailCount int, keyword string) ([]string, error)
 }
 
 type ObjectDB interface {
