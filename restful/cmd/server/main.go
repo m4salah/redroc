@@ -16,11 +16,13 @@ import (
 )
 
 var (
-	backendAddress = flag.String("backend_address", "localhost:8080", "backend server address")
-	backendTimeout = flag.Duration("backend_timeout", 10*time.Second, "backend request timeout")
-	listenPort     = flag.Int("listen_port", 3300, "start server on this port")
-	host           = flag.String("host", "localhost", "start server on this host")
-	env            = flag.String("env", "development", "Env")
+	downloadBackendAddress = flag.String("download_backend_address", "localhost:8080", "download backend server address")
+	uploadBackendAddress   = flag.String("upload_backend_address", "localhost:8080", "upload backend server address")
+	searchBackendAddress   = flag.String("search_backend_address", "localhost:8080", "search backend server address")
+	backendTimeout         = flag.Duration("backend_timeout", 10*time.Second, "backend request timeout")
+	listenPort             = flag.Int("listen_port", 3300, "start server on this port")
+	host                   = flag.String("host", "localhost", "start server on this host")
+	env                    = flag.String("env", "development", "Env")
 )
 
 // release is set through the linker at build time, generally from a git sha.
@@ -45,7 +47,9 @@ func start() int {
 		Log:                 logger,
 		Port:                *listenPort,
 		ConnTimeout:         *backendTimeout,
-		DownloadBackendAddr: *backendAddress,
+		DownloadBackendAddr: *downloadBackendAddress,
+		UploadBackendAddr:   *uploadBackendAddress,
+		SearchBackendAddr:   *searchBackendAddress,
 	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
