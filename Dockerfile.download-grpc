@@ -1,0 +1,13 @@
+FROM golang:alpine AS build
+
+WORKDIR /
+COPY grpc grpc
+COPY util util
+COPY go.* ./
+RUN	go build -ldflags="-s -w" -o bin/download grpc/services/download/main.go
+
+FROM scratch
+
+COPY --from=build /bin/download /bin/download
+
+ENTRYPOINT ["/bin/download", "-listen_port", ":8080"]
