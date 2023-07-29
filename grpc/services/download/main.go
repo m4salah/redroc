@@ -30,7 +30,7 @@ func (d *DownloadServiceRPC) Download(ctx context.Context, request *pb.DownloadP
 	if *storageDryRun {
 		return &pb.DownloadPhotoResponse{}, nil
 	}
-	image, err := d.DownloadService.Download(ctx, request.ImgName)
+	image, err := d.DownloadService.DB.Get(ctx, request.ImgName)
 	if err != nil {
 		return nil, err
 	}
