@@ -117,9 +117,12 @@ func main() {
 		fmt.Println("Error initializing Bucket", err)
 		return
 	}
-	filestore, err := storage.NewFilestore(storage.NewFilestoreOptions{ProjectID: *firestoreProject, Log: logger})
+	filestore, err := storage.NewFilestore(storage.NewFilestoreOptions{ProjectID: *firestoreProject,
+		Log:             logger,
+		FilestoreLatest: *firestoreLatestPath,
+		ThumbnailPerfix: *thumbnailPrefix})
 	if err != nil {
-		fmt.Println("Error initilizing filestore", err)
+		fmt.Println("Error initilizing filestore ", err)
 		return
 	}
 	listener, err := net.Listen("tcp", *listenPort)
