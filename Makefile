@@ -34,4 +34,10 @@ build-search:
 	go build -o bin/search grpc/services/search/main.go
 	
 build-server:
-	go build -o bin/server restful/cmd/server/main.go
+	go build -o bin/server restful/cmd/main.go
+
+docker-build-server:
+	docker build -t redroc-server -f Dockerfile.server .
+
+docker-run-server: docker-build-server
+	docker run -p 8080:8080 redroc-server:latest
