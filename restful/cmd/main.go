@@ -20,8 +20,8 @@ var (
 	uploadBackendAddress   = flag.String("upload_backend_address", "localhost:8080", "upload backend server address")
 	searchBackendAddress   = flag.String("search_backend_address", "localhost:8080", "search backend server address")
 	backendTimeout         = flag.Duration("backend_timeout", 10*time.Second, "backend request timeout")
-	listenPort             = flag.Int("listen_port", 3300, "start server on this port")
-	host                   = flag.String("host", "localhost", "start server on this host")
+	listenPort             = flag.Int("listen_port", 8080, "start server on this port")
+	host                   = flag.String("host", "", "start server on this host")
 	env                    = flag.String("env", "development", "Env")
 )
 
