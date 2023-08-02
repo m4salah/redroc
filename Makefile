@@ -1,3 +1,5 @@
+GOOGLE_PROJECT_ID?=carbon-relic-393513
+
 proto-download:
 	protoc                                      \
 			--go_out=.                          \
@@ -36,24 +38,57 @@ build-search:
 build-server:
 	go build -o bin/server restful/cmd/main.go
 
+# docker command for server.
 docker-build-server:
 	docker build -t redroc-server -f Dockerfile.server .
 
 docker-run-server: docker-build-server
 	docker run -p 8080:8080 redroc-server:latest
 
+docker-tag-server: docker-build-server
+	docker tag redroc-server gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server
+
+docker-push-server: docker-tag-server
+	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server
+
+deploy-server: docker-push-server
+	gcloud run deploy redroc-server \
+  		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server \
+		--platform managed \
+		--region us-central1  \
+		--allow-unauthenticated
+	gcloud run services update redroc-server --max-instances 5 --cpu 1 --memory 128Mi
+
+# docker command for download.
 docker-build-download:
 	docker build -t redroc-download -f Dockerfile.download-grpc .
 
 docker-run-download: docker-build-download
 	docker run -p 8080:8080 redroc-download:latest
 
+docker-tag-download: docker-build-download
+	docker tag redroc-download gcr.io/$(GOOGLE_PROJECT_ID)/redroc-download
+
+docker-push-download: docker-tag-download
+	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-download
+
+deploy-download: docker-push-download
+	gcloud run deploy redroc-download \
+  		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-download \
+		--platform managed \
+		--region us-central1  \
+		--allow-unauthenticated
+
+	gcloud run services update redroc-download --max-instances 5 --cpu 1 --memory 128Mi --use-http2
+
+# docker command for upload.
 docker-build-upload:
 	docker build -t redroc-upload -f Dockerfile.upload-grpc .
 
 docker-run-upload: docker-build-upload
 	docker run -p 8080:8080 redroc-upload:latest
 
+# docker command for search.
 docker-build-search:
 	docker build -t redroc-search -f Dockerfile.search-grpc .
 
