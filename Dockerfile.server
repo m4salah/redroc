@@ -11,4 +11,4 @@ FROM scratch
 
 COPY --from=build /bin/server /bin/server
 
-ENTRYPOINT ["/bin/server", "-listen_port", "8080"]
+ENTRYPOINT ["/bin/server", "-download_backend_address", "redroc-download-wcsrlqsv2a-uc.a.run.app:443"]
