@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 	"time"
 
@@ -10,14 +11,17 @@ import (
 	pb "github.com/m4salah/redroc/grpc/protos"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
 func Download(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration) {
 	mux.Get("/download/{imgName}", func(w http.ResponseWriter, r *http.Request) {
 		imgName := chi.URLParam(r, "imgName")
-		conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		creds := credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+		conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(creds))
 		if err != nil {
 			log.Error("Cannot dial to grpc service", zap.Error(err))
 			http.Error(w, "Cannot dial download service", http.StatusBadRequest)
