@@ -11,4 +11,4 @@ FROM scratch
 
 COPY --from=build /bin/server /bin/server
 
-ENTRYPOINT ["/bin/server", "-download_backend_address", "redroc-download-wcsrlqsv2a-uc.a.run.app:443"]
+ENTRYPOINT ["/bin/server", "-download_backend_address", "redroc-download-wcsrlqsv2a-uc.a.run.app:443", "-upload_backend_address", "redroc-upload-wcsrlqsv2a-uc.a.run.app:443", "-search_backend_address", "redroc-search-wcsrlqsv2a-uc.a.run.app:443"]
