@@ -6,7 +6,7 @@ COPY util util
 COPY go.* ./
 RUN	go build -ldflags="-s -w" -o bin/search grpc/services/search/main.go
 
-FROM scratch
+FROM alpine
 
 COPY --from=build /bin/search /bin/search
 
