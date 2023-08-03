@@ -29,6 +29,9 @@ proto: proto-download proto-upload proto-search
 build-download:
 	go build -o bin/download grpc/services/download/main.go
 
+run-download: build-download
+	./bin/download
+
 build-upload:
 	go build -o bin/upload grpc/services/upload/main.go
 
@@ -37,6 +40,9 @@ build-search:
 	
 build-server:
 	go build -o bin/server restful/cmd/main.go
+
+run-server: build-server
+	./bin/server
 
 # docker command for server.
 docker-build-server:
@@ -79,7 +85,7 @@ deploy-download: docker-push-download
 		--region us-central1  \
 		--allow-unauthenticated
 
-	gcloud run services update redroc-download --max-instances 5 --cpu 1 --memory 128Mi --use-http2
+	gcloud run services update redroc-download --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
 # docker command for upload.
 docker-build-upload:
@@ -88,9 +94,39 @@ docker-build-upload:
 docker-run-upload: docker-build-upload
 	docker run -p 8080:8080 redroc-upload:latest
 
+docker-tag-upload: docker-build-upload
+	docker tag redroc-upload gcr.io/$(GOOGLE_PROJECT_ID)/redroc-upload
+
+docker-push-upload: docker-tag-upload
+	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-upload
+
+deploy-upload: docker-push-upload
+	gcloud run deploy redroc-upload \
+  		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-upload \
+		--platform managed \
+		--region us-central1  \
+		--allow-unauthenticated
+
+	gcloud run services update redroc-upload --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
+
 # docker command for search.
 docker-build-search:
 	docker build -t redroc-search -f Dockerfile.search-grpc .
 
 docker-run-search: docker-build-search
 	docker run -p 8080:8080 redroc-search:latest
+
+docker-tag-search: docker-build-search
+	docker tag redroc-search gcr.io/$(GOOGLE_PROJECT_ID)/redroc-search
+
+docker-push-search: docker-tag-search
+	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-search
+
+deploy-search: docker-push-search
+	gcloud run deploy redroc-search \
+  		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-search \
+		--platform managed \
+		--region us-central1  \
+		--allow-unauthenticated
+
+	gcloud run services update redroc-search --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
