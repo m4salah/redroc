@@ -99,7 +99,7 @@ func (f *FilestoreMetadata) StoreLatest(ctx context.Context, index uint32, lates
 
 	id := path.Join(latest, strconv.Itoa(int(index)))
 	_, err = client.Doc(id).Set(ctx, map[string]interface{}{
-		"object_name": objName,
+		"obj_name": objName,
 	})
 	if err != nil {
 		return fmt.Errorf("firestore create failed for %s: %v", objName, err)
@@ -109,7 +109,6 @@ func (f *FilestoreMetadata) StoreLatest(ctx context.Context, index uint32, lates
 
 func getData(doc *firestore.DocumentSnapshot) string {
 	data := doc.Data()
-	fmt.Println("dat", data["obj_name"])
 	return data["obj_name"].(string)
 }
 
