@@ -7,7 +7,7 @@ COPY util util
 COPY go.* ./
 RUN	go build -ldflags="-s -w" -o bin/server restful/cmd/main.go
 
-FROM scratch
+FROM alpine
 
 COPY --from=build /bin/server /bin/server
 
