@@ -63,7 +63,8 @@ deploy-server: docker-push-server
 		--platform managed \
 		--region us-central1  \
 		--allow-unauthenticated
-	gcloud run services update redroc-server --max-instances 5 --cpu 1 --memory 128Mi
+	gcloud run services update redroc-server --max-instances 5 --cpu 1 --memory 128Mi \
+		--service-account cloud-run-invoker@$(GOOGLE_PROJECT_ID).iam.gserviceaccount.com
 
 # docker command for download.
 docker-build-download:
