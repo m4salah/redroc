@@ -5,6 +5,7 @@ import (
 )
 
 func (s *Server) setupRoutes() {
+	handlers.Home(s.mux)
 	handlers.Health(s.mux)
 	handlers.Download(s.mux, s.downloadBackendAddr, s.log, s.connTimeout)
 	handlers.Upload(s.mux, s.uploadBackendAddr, s.log, s.connTimeout)
