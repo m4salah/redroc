@@ -17,7 +17,7 @@ import (
 var (
 	env           = flag.String("env", "development", "Env")
 	listenPort    = flag.String("listen_port", ":8080", "start server on this port")
-	storageBucket = flag.String("storage_bucket", "sre-classroom-image-server_photos-2", "storage bucket to use for storing photos")
+	storageBucket = flag.String("storage_bucket", "sre-classroom-image-server_photos-3", "storage bucket to use for storing photos")
 	storageDryRun = flag.Bool("storage_dry_run", false, "disable storage bucket reads")
 )
 

@@ -26,7 +26,7 @@ var (
 	firestoreProject      = flag.String("firestore_project", "carbon-relic-393513", "firestore project to use for storing tags")
 	firestoreDryRun       = flag.Bool("firestore_dry_run", false, "disable firestore writes")
 	listenPort            = flag.String("listen_port", ":8080", "start server on this port")
-	storageBucket         = flag.String("storage_bucket", "sre-classroom-image-server_photos-2", "storage bucket to use for storing photos")
+	storageBucket         = flag.String("storage_bucket", "sre-classroom-image-server_photos-3", "storage bucket to use for storing photos")
 	storageDryRun         = flag.Bool("storage_dry_run", false, "disable storage bucket writes")
 	thumbnailHeight       = flag.Uint("thumbnail_height", 180, "height of the generated photo thumbnail")
 	thumbnailPrefix       = flag.String("thumbnail_prefix", "thumbnail_", "name prefix to use for storing thumbnails")
