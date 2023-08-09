@@ -1,6 +1,6 @@
 module github.com/m4salah/redroc
 
-go 1.20
+go 1.21
 
 require (
 	cloud.google.com/go/firestore v1.11.0
