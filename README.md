@@ -52,7 +52,7 @@ Used Technologies: Golang, and Chi mux for handling routs.
     multipart/form-data:
         username: required: username who is upload the image
         file:     required: image supported type (png, jpeg, gif)
-        hashtags: required: metadata in format ["hashtag1", "hashtags2", ...]
+        hashtags: optional: metadata in format ["hashtag1", "hashtags2", ...]
 ```
 
 ---
