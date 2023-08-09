@@ -6,22 +6,54 @@ Scalabale image service that allow users download, search, and upload images.
 
 We have two type of services gRPC, and RESTful services.
 
-            - ### RESTful service
+- ### RESTful service
 
     This service is authenticated to call other gRPC services on Google Cloud (Cloud Run), and this is the only services exposed to the world.
 
     Used Technologies: Golang, and Chi mux for handling routs.
 
-### Api
+### API
 
 - Welcome page: this the root path return Simple html Welcoming the user
 
-        ``` route
+```bash
 
-        /
+    /
 
-        ```
+```
 
+- Health check
+
+```bash
+    GET /health
+```
+
+- Download image
+
+```bash
+    GET /download/{image_name}
+
+    image_name: required
+```
+
+- Search for image
+
+```bash
+    GET /search?q={search_keyword}
+
+    search_keyword: optional: if not provided we return latest images uploaded
+```
+
+- Upload Image
+
+```bash
+    POST /upload
+
+    multipart/form-data:
+        username: required: username who is upload the image
+        file:     required: image supported type (png, jpeg, gif)
+        hashtags: required: metadata in format ["hashtag1", "hashtags2", ...]
+```
 
 - ### gRPC services
 
