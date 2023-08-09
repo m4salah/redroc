@@ -133,14 +133,14 @@ We cannot call those services directly, those services required authentication f
 
     ```proto
         message GetThumbnailImagesRequest {
-        // if keyword=="latest", return recent photo
-        // in the service, we will update metadata such as download_times accordingly
-        string search_keyword = 1;
+            // if keyword=="latest", return recent photo
+            // in the service, we will update metadata such as download_times accordingly
+            string search_keyword = 1;
         }
 
         message GetThumbnailImagesResponse {
-        // get the storage image-serving address and return
-        repeated string storage_url = 1;
+            // get the storage image-serving address and return
+            repeated string storage_url = 1;
         }
 
         service GetThumbnail {
