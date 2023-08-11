@@ -1,12 +1,12 @@
-FROM golang:alpine AS build
+FROM golang:1.21.0 as build
 
 WORKDIR /
 COPY grpc grpc
 COPY util util
 COPY go.* ./
-RUN	go build -ldflags="-s -w" -o bin/upload grpc/services/upload/main.go
+RUN	CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/upload grpc/services/upload/main.go
 
-FROM alpine
+FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /bin/upload /bin/upload
 
