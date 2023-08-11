@@ -132,4 +132,5 @@ deploy-search: docker-push-search
 
 	gcloud run services update redroc-search --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
+# Deploy all services.
 deploy-all: deploy-server deploy-download deploy-upload deploy-search
