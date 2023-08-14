@@ -22,6 +22,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/idtoken"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
@@ -95,7 +96,10 @@ func MakeThumbnail(photo []byte, width, height uint) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func GetAuthContext(ctx context.Context, audience string) (context.Context, error) {
+func GetAuthContext(ctx context.Context, audience string, skipAuth bool) (context.Context, error) {
+	if skipAuth {
+		return ctx, nil
+	}
 	// Create an identity token.
 	// With a global TokenSource tokens would be reused and auto-refreshed at need.
 	// A given TokenSource is specific to the audience.
@@ -120,7 +124,10 @@ func ExtractServiceURL(addr string) string {
 // CreateTransportCredentials creates a new TLS credentials instance with the system root CA pool.
 //
 // This is used to create a secure connection to the server.
-func CreateTransportCredentials() (credentials.TransportCredentials, error) {
+func CreateTransportCredentials(skipAuth bool) (credentials.TransportCredentials, error) {
+	if skipAuth {
+		return insecure.NewCredentials(), nil
+	}
 	systemRoots, err := x509.SystemCertPool()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load system root CA cert pool")
@@ -133,7 +140,10 @@ func CreateTransportCredentials() (credentials.TransportCredentials, error) {
 
 // encrypt data using AES algorithm
 func EncryptAES(plainData, secret []byte) ([]byte, error) {
-	block, _ := aes.NewCipher(secret)
+	block, err := aes.NewCipher(secret)
+	if err != nil {
+		return nil, err
+	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
@@ -148,4 +158,19 @@ func EncryptAES(plainData, secret []byte) ([]byte, error) {
 		nonce,
 		plainData,
 		nil), nil
+}
+
+// decrypt data using AES algorithm
+func DecryptAES(cipherData, secret []byte) ([]byte, error) {
+	block, err := aes.NewCipher(secret)
+	if err != nil {
+		return nil, err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonceSize := gcm.NonceSize()
+	nonce, ciphertext := cipherData[:nonceSize], cipherData[nonceSize:]
+	return gcm.Open(nil, nonce, ciphertext, nil)
 }
