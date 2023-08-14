@@ -24,9 +24,14 @@ const (
 // pingRequestWithAuth mints a new Identity Token for each request.
 // This token has a 1 hour expiry and should be reused.
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
-func pingUploadRequestWithAuth(backendTimeout time.Duration, backendAddr string, log *zap.Logger, p *pb.UploadImageRequest, audience string) (*pb.UploadImageResponse, error) {
+func pingUploadRequestWithAuth(backendTimeout time.Duration,
+	backendAddr string,
+	log *zap.Logger,
+	p *pb.UploadImageRequest,
+	audience string,
+	skipAuth bool) (*pb.UploadImageResponse, error) {
 
-	creds, err := util.CreateTransportCredentials()
+	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
 		log.Fatal("failed to load system root CA cert pool")
 	}
@@ -42,7 +47,7 @@ func pingUploadRequestWithAuth(backendTimeout time.Duration, backendAddr string,
 	ctx, cancel := context.WithTimeout(context.Background(), backendTimeout)
 	defer cancel()
 
-	ctx, err = util.GetAuthContext(ctx, audience)
+	ctx, err = util.GetAuthContext(ctx, audience, skipAuth)
 	if err != nil {
 		return nil, fmt.Errorf("error get auth context: %w", err)
 	}
@@ -52,9 +57,14 @@ func pingUploadRequestWithAuth(backendTimeout time.Duration, backendAddr string,
 	return client.Upload(ctx, p, grpc.WaitForReady(true))
 }
 
-func pingCreateMetadataRequestWithAuth(backendTimeout time.Duration, backendAddr string, log *zap.Logger, p *pb.CreateMetadataRequest, audience string) (*pb.CreateMetadataResponse, error) {
+func pingCreateMetadataRequestWithAuth(backendTimeout time.Duration,
+	backendAddr string,
+	log *zap.Logger,
+	p *pb.CreateMetadataRequest,
+	audience string,
+	skipAuth bool) (*pb.CreateMetadataResponse, error) {
 
-	creds, err := util.CreateTransportCredentials()
+	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
 		log.Fatal("failed to load system root CA cert pool")
 	}
@@ -70,7 +80,7 @@ func pingCreateMetadataRequestWithAuth(backendTimeout time.Duration, backendAddr
 	ctx, cancel := context.WithTimeout(context.Background(), backendTimeout)
 	defer cancel()
 
-	ctx, err = util.GetAuthContext(ctx, audience)
+	ctx, err = util.GetAuthContext(ctx, audience, skipAuth)
 	if err != nil {
 		return nil, fmt.Errorf("error get auth context: %w", err)
 	}
@@ -80,7 +90,7 @@ func pingCreateMetadataRequestWithAuth(backendTimeout time.Duration, backendAddr
 	return client.CreateMetadata(ctx, p, grpc.WaitForReady(true))
 }
 
-func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration) {
+func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration, skipAuth bool) {
 	mux.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
 
 		err := r.ParseMultipartForm(5 * MB)
@@ -120,7 +130,7 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 
 		eg.Go(func() error {
 			uploadRequest := &pb.UploadImageRequest{ObjName: objName, Image: blob}
-			_, err = pingUploadRequestWithAuth(backendTimeout, backendAddr, log, uploadRequest, util.ExtractServiceURL(backendAddr))
+			_, err = pingUploadRequestWithAuth(backendTimeout, backendAddr, log, uploadRequest, util.ExtractServiceURL(backendAddr), skipAuth)
 			if err != nil {
 				return fmt.Errorf("photo upload failed: %v", err)
 			}
@@ -130,7 +140,7 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 		eg.Go(func() error {
 			metadataRequest := &pb.CreateMetadataRequest{
 				ObjName: objName, User: username, Hashtags: hashtags}
-			_, err = pingCreateMetadataRequestWithAuth(backendTimeout, backendAddr, log, metadataRequest, util.ExtractServiceURL(backendAddr))
+			_, err = pingCreateMetadataRequestWithAuth(backendTimeout, backendAddr, log, metadataRequest, util.ExtractServiceURL(backendAddr), skipAuth)
 			if err != nil {
 				return fmt.Errorf("metadata create failed: %v", err)
 			}

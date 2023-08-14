@@ -22,6 +22,7 @@ type Server struct {
 	uploadBackendAddr   string
 	searchBackendAddr   string
 	connTimeout         time.Duration
+	skipGcloudAuth      bool
 }
 
 type Options struct {
@@ -32,6 +33,7 @@ type Options struct {
 	UploadBackendAddr   string
 	SearchBackendAddr   string
 	ConnTimeout         time.Duration
+	SkipGcloudAuth      bool
 }
 
 func New(opts Options) *Server {
@@ -48,6 +50,7 @@ func New(opts Options) *Server {
 		log:                 opts.Log,
 		mux:                 mux,
 		connTimeout:         opts.ConnTimeout,
+		skipGcloudAuth:      opts.SkipGcloudAuth,
 		server: &http.Server{
 			Addr:              address,
 			Handler:           mux,

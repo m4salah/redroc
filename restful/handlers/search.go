@@ -17,9 +17,14 @@ import (
 // pingRequestWithAuth mints a new Identity Token for each request.
 // This token has a 1 hour expiry and should be reused.
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
-func pingSearchRequestWithAuth(backendTimeout time.Duration, backendAddr string, log *zap.Logger, p *pb.GetThumbnailImagesRequest, audience string) (*pb.GetThumbnailImagesResponse, error) {
+func pingSearchRequestWithAuth(backendTimeout time.Duration,
+	backendAddr string,
+	log *zap.Logger,
+	p *pb.GetThumbnailImagesRequest,
+	audience string,
+	skipAuth bool) (*pb.GetThumbnailImagesResponse, error) {
 
-	creds, err := util.CreateTransportCredentials()
+	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
 		log.Fatal("failed to load system root CA cert pool")
 	}
@@ -35,7 +40,7 @@ func pingSearchRequestWithAuth(backendTimeout time.Duration, backendAddr string,
 	ctx, cancel := context.WithTimeout(context.Background(), backendTimeout)
 	defer cancel()
 
-	ctx, err = util.GetAuthContext(ctx, audience)
+	ctx, err = util.GetAuthContext(ctx, audience, skipAuth)
 	if err != nil {
 		return nil, fmt.Errorf("error get auth context: %w", err)
 	}
@@ -45,13 +50,13 @@ func pingSearchRequestWithAuth(backendTimeout time.Duration, backendAddr string,
 	return client.GetThumbnail(ctx, p, grpc.WaitForReady(true))
 }
 
-func Search(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration) {
+func Search(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration, skipAuth bool) {
 	mux.Get("/search", func(w http.ResponseWriter, r *http.Request) {
 		// get the query string
 		q := r.URL.Query().Get("q")
 		log.Info("searching for", zap.String("q", q))
 		request := &pb.GetThumbnailImagesRequest{SearchKeyword: q}
-		response, err := pingSearchRequestWithAuth(backendTimeout, backendAddr, log, request, util.ExtractServiceURL(backendAddr))
+		response, err := pingSearchRequestWithAuth(backendTimeout, backendAddr, log, request, util.ExtractServiceURL(backendAddr), skipAuth)
 		if err != nil {
 			log.Error("search request failed", zap.Error(err))
 			http.Error(w, "search request failed", http.StatusBadRequest)

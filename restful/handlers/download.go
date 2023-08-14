@@ -18,8 +18,13 @@ import (
 // pingRequestWithAuth mints a new Identity Token for each request.
 // This token has a 1 hour expiry and should be reused.
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
-func pingDownloadRequestWithAuth(backendTimeout time.Duration, backendAddr string, log *zap.Logger, p *pb.DownloadPhotoRequest, audience string) (*pb.DownloadPhotoResponse, error) {
-	creds, err := util.CreateTransportCredentials()
+func pingDownloadRequestWithAuth(backendTimeout time.Duration,
+	backendAddr string,
+	log *zap.Logger,
+	p *pb.DownloadPhotoRequest,
+	audience string,
+	skipAuth bool) (*pb.DownloadPhotoResponse, error) {
+	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
 		log.Fatal("failed to load system root CA cert pool")
 	}
@@ -34,7 +39,7 @@ func pingDownloadRequestWithAuth(backendTimeout time.Duration, backendAddr strin
 	ctx, cancel := context.WithTimeout(context.Background(), backendTimeout)
 	defer cancel()
 
-	ctx, err = util.GetAuthContext(ctx, audience)
+	ctx, err = util.GetAuthContext(ctx, audience, skipAuth)
 	if err != nil {
 		return nil, fmt.Errorf("error get auth context: %w", err)
 	}
@@ -44,13 +49,13 @@ func pingDownloadRequestWithAuth(backendTimeout time.Duration, backendAddr strin
 	return client.Download(ctx, p, grpc.WaitForReady(true))
 }
 
-func Download(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration) {
+func Download(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration, skipAuth bool) {
 	mux.Get("/download/{imgName}", func(w http.ResponseWriter, r *http.Request) {
 		imgName := chi.URLParam(r, "imgName")
 
 		request := &pb.DownloadPhotoRequest{ImgName: imgName}
 
-		response, err := pingDownloadRequestWithAuth(backendTimeout, backendAddr, log, request, util.ExtractServiceURL(backendAddr))
+		response, err := pingDownloadRequestWithAuth(backendTimeout, backendAddr, log, request, util.ExtractServiceURL(backendAddr), skipAuth)
 		if err != nil {
 			log.Error("downloading image failed", zap.Error(err))
 			grpcStatus, ok := status.FromError(err)
