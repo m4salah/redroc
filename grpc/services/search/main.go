@@ -18,7 +18,7 @@ var (
 	env                 = flag.String("env", "development", "Env")
 	firestoreLatestPath = flag.String("firestore_latest_path", "latest", "path for storing latest images")
 	firestoreProject    = flag.String("firestore_project", "carbon-relic-393513", "firestore project to use for storing tags")
-	listenPort          = flag.String("listen_port", ":8080", "start server on this port")
+	listenPort          = flag.Int("listen_port", 8080, "start server on this port")
 	storageDryRun       = flag.Bool("storage_dry_run", false, "disable storage bucket writes")
 	thumbnailCount      = flag.Int("thumbnail_count", 10, "number of thumbnails to return")
 	thumbnailPrefix     = flag.String("thumbnail_prefix", "/download/thumbnail_", "name prefix to use for storing thumbnails")
@@ -58,17 +58,17 @@ func main() {
 		fmt.Println("Error initilizing filestore", err)
 		return
 	}
-	listener, err := net.Listen("tcp", *listenPort)
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *listenPort))
 	if err != nil {
-		logger.Fatal("failed to listen", zap.String("port", *listenPort), zap.Error(err))
+		logger.Fatal("failed to listen", zap.Int("port", *listenPort), zap.Error(err))
 		return
 	}
 	grpcServer := grpc.NewServer()
 	searchService := types.SearchService{Log: logger, MetadataDB: filestore}
 	pb.RegisterGetThumbnailServer(grpcServer, &SearchServiceRPC{SearchService: searchService})
 
-	logger.Info("starting GRPC server", zap.String("port", *listenPort))
+	logger.Info("starting GRPC server", zap.Int("port", *listenPort))
 	if err := grpcServer.Serve(listener); err != nil {
-		logger.Fatal("Failed to serve", zap.String("port", *listenPort))
+		logger.Fatal("Failed to serve", zap.Int("port", *listenPort))
 	}
 }
