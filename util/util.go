@@ -3,6 +3,9 @@ package util
 import (
 	"bytes"
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -126,4 +129,23 @@ func CreateTransportCredentials() (credentials.TransportCredentials, error) {
 		RootCAs: systemRoots,
 	})
 	return creds, nil
+}
+
+// encrypt data using AES algorithm
+func EncryptAES(plainData, secret []byte) ([]byte, error) {
+	block, _ := aes.NewCipher(secret)
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	_, err = io.ReadFull(rand.Reader, nonce)
+	if err != nil {
+		return nil, err
+	}
+	return gcm.Seal(
+		nonce,
+		nonce,
+		plainData,
+		nil), nil
 }
