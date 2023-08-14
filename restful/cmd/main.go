@@ -23,6 +23,7 @@ var (
 	listenPort             = flag.Int("listen_port", 8080, "start server on this port")
 	host                   = flag.String("host", "", "start server on this host")
 	env                    = flag.String("env", "development", "Env")
+	skiptGcloudAuth        = flag.Bool("skip_gcloud_auth", false, "disable gcloud auth")
 )
 
 // release is set through the linker at build time, generally from a git sha.
@@ -43,6 +44,7 @@ func start() int {
 	}
 	logger = logger.With(zap.String("release", release))
 	s := server.New(server.Options{
+		SkipGcloudAuth:      *skiptGcloudAuth,
 		Host:                *host,
 		Log:                 logger,
 		Port:                *listenPort,
