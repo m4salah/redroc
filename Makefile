@@ -51,7 +51,8 @@ run-server: build-server
 	./bin/server -listen_port 8080               \
 		-download_backend_address localhost:8081 \
 		-upload_backend_address   localhost:8082 \
-		-search_backend_address   localhost:8083
+		-search_backend_address   localhost:8083 \
+		-skip_gcloud_auth 		  true
 
 # docker command for server.
 docker-build-server:
