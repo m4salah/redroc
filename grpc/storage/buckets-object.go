@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"cloud.google.com/go/storage"
+	"github.com/m4salah/redroc/util"
 	"go.uber.org/zap"
 )
 
@@ -37,6 +38,7 @@ func NewBuckets(opts NewBucketsOptions) (*BucketsObject, error) {
 }
 
 func (b *BucketsObject) Store(ctx context.Context, objName string, data []byte) error {
+	b.log.Info("Storing Image to cloud storage", zap.String("objName", objName))
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		b.log.Error("storage client failed", zap.Error(err))
@@ -48,7 +50,11 @@ func (b *BucketsObject) Store(ctx context.Context, objName string, data []byte) 
 
 	obj := bucket.Object(objName)
 	w := obj.NewWriter(ctx)
-	r := bytes.NewReader(data)
+	encryptedData, err := util.EncryptAES(data, []byte("UHYJ5N1bj67XOVtNokjZXLGz3yspZqUN"))
+	if err != nil {
+		return fmt.Errorf("storage encryption failed: %v", err)
+	}
+	r := bytes.NewReader(encryptedData)
 
 	_, err = io.Copy(w, r)
 
@@ -65,7 +71,7 @@ func (b *BucketsObject) Store(ctx context.Context, objName string, data []byte) 
 }
 
 func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error) {
-	bo.log.Info("Getting Object", zap.String("objName", objName))
+	bo.log.Info("Getting Object from cloud storage", zap.String("objName", objName))
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		bo.log.Error("storage client failed", zap.Error(err))
@@ -95,6 +101,5 @@ func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error
 		bo.log.Error("storage reading failed", zap.String("objName", objName), zap.Error(err))
 		return nil, err
 	}
-
-	return b.Bytes(), nil
+	return util.DecryptAES(b.Bytes(), []byte("UHYJ5N1bj67XOVtNokjZXLGz3yspZqUN"))
 }
