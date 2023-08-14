@@ -50,7 +50,7 @@ func NewFilestore(opts NewFilestoreOptions) (*FilestoreMetadata, error) {
 }
 
 func (f *FilestoreMetadata) StorePath(ctx context.Context, path string, timestamp int64) error {
-	f.log.Info("Storing metadata")
+	f.log.Info("Storing metadata Path")
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
 		f.log.Error("firestore client failed", zap.Error(err))
@@ -69,7 +69,7 @@ func (f *FilestoreMetadata) StorePath(ctx context.Context, path string, timestam
 }
 
 func (f *FilestoreMetadata) StorePathWithUser(ctx context.Context, user, path string, timestamp int64) error {
-	f.log.Info("Storing metadata")
+	f.log.Info("Storing metadata Path with user")
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
 		f.log.Error("firestore client failed", zap.Error(err))
@@ -89,7 +89,7 @@ func (f *FilestoreMetadata) StorePathWithUser(ctx context.Context, user, path st
 }
 
 func (f *FilestoreMetadata) StoreLatest(ctx context.Context, index uint32, latest, objName string) error {
-	f.log.Info("Storing metadata")
+	f.log.Info("Storing metadata Latest")
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
 		f.log.Error("firestore client failed", zap.Error(err))
