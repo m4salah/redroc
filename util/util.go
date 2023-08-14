@@ -139,6 +139,7 @@ func CreateTransportCredentials(skipAuth bool) (credentials.TransportCredentials
 }
 
 // encrypt data using AES algorithm
+// this code from https://github.com/purnaresa/bulwark/blob/master/encryption/encrpytion.go
 func EncryptAES(plainData, secret []byte) ([]byte, error) {
 	block, err := aes.NewCipher(secret)
 	if err != nil {
@@ -161,6 +162,7 @@ func EncryptAES(plainData, secret []byte) ([]byte, error) {
 }
 
 // decrypt data using AES algorithm
+// this code from https://github.com/purnaresa/bulwark/blob/master/encryption/encrpytion.go
 func DecryptAES(cipherData, secret []byte) ([]byte, error) {
 	block, err := aes.NewCipher(secret)
 	if err != nil {
