@@ -50,6 +50,7 @@ func (b *BucketsObject) Store(ctx context.Context, objName string, data []byte) 
 
 	obj := bucket.Object(objName)
 	w := obj.NewWriter(ctx)
+	// TODO: make secret from env variable
 	encryptedData, err := util.EncryptAES(data, []byte("UHYJ5N1bj67XOVtNokjZXLGz3yspZqUN"))
 	if err != nil {
 		return fmt.Errorf("storage encryption failed: %v", err)
@@ -101,5 +102,6 @@ func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error
 		bo.log.Error("storage reading failed", zap.String("objName", objName), zap.Error(err))
 		return nil, err
 	}
+	// TODO: make secret from env variable
 	return util.DecryptAES(b.Bytes(), []byte("UHYJ5N1bj67XOVtNokjZXLGz3yspZqUN"))
 }
