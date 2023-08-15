@@ -4,12 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"path"
 	"sync/atomic"
 	"time"
 
+	"github.com/joho/godotenv"
 	pb "github.com/m4salah/redroc/grpc/protos"
 	"github.com/m4salah/redroc/grpc/storage"
 	"github.com/m4salah/redroc/grpc/types"
@@ -107,6 +109,13 @@ func (d *UploadServiceRPC) CreateMetadata(ctx context.Context, request *pb.Creat
 
 func main() {
 	flag.Parse()
+
+	// load env variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	logger, err := util.CreateLogger(*env)
 	if err != nil {
 		fmt.Println("Error setting up the logger:", err)
