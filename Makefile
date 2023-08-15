@@ -94,7 +94,7 @@ deploy-download: docker-push-download
 	gcloud run deploy redroc-download \
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-download \
 		--platform managed \
-		--region us-central1  \
+		--region us-central1  
 
 	gcloud run services update redroc-download --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
@@ -115,7 +115,7 @@ deploy-upload: docker-push-upload
 	gcloud run deploy redroc-upload \
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-upload \
 		--platform managed \
-		--region us-central1  \
+		--region us-central1  
 
 	gcloud run services update redroc-upload --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
@@ -136,7 +136,7 @@ deploy-search: docker-push-search
 	gcloud run deploy redroc-search \
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-search \
 		--platform managed \
-		--region us-central1  \
+		--region us-central1  
 
 	gcloud run services update redroc-search --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
