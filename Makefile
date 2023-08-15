@@ -73,6 +73,7 @@ deploy-server: docker-push-server
 		--platform managed \
 		--region us-central1  \
 		--allow-unauthenticated
+
 	gcloud run services update redroc-server --max-instances 5 --cpu 1 --memory 128Mi \
 		--service-account cloud-run-invoker@$(GOOGLE_PROJECT_ID).iam.gserviceaccount.com
 
@@ -94,7 +95,6 @@ deploy-download: docker-push-download
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-download \
 		--platform managed \
 		--region us-central1  \
-		--allow-unauthenticated
 
 	gcloud run services update redroc-download --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
@@ -116,7 +116,6 @@ deploy-upload: docker-push-upload
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-upload \
 		--platform managed \
 		--region us-central1  \
-		--allow-unauthenticated
 
 	gcloud run services update redroc-upload --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
@@ -138,7 +137,6 @@ deploy-search: docker-push-search
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-search \
 		--platform managed \
 		--region us-central1  \
-		--allow-unauthenticated
 
 	gcloud run services update redroc-search --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
