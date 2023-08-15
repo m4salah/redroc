@@ -1,4 +1,4 @@
-FROM golang:1.21.0 as build
+FROM golang:1.21.0-bullseye as build
 
 WORKDIR /
 COPY grpc grpc
@@ -10,4 +10,4 @@ FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /bin/download /bin/download
 
-ENTRYPOINT ["/bin/download"]
+ENTRYPOINT ["/bin/download", "-listen_port", "8080"]
