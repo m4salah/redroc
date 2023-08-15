@@ -7,6 +7,7 @@ require (
 	cloud.google.com/go/storage v1.31.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/google/uuid v1.3.0
+	github.com/joho/godotenv v1.5.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.2.0
