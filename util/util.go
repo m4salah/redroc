@@ -16,6 +16,7 @@ import (
 	"image/png"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/nfnt/resize"
@@ -175,4 +176,13 @@ func DecryptAES(cipherData, secret []byte) ([]byte, error) {
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := cipherData[:nonceSize], cipherData[nonceSize:]
 	return gcm.Open(nil, nonce, ciphertext, nil)
+}
+
+// GetStringOrDefault returns the value of the environment variable named by the key or devaultV if key not found.
+func GetStringOrDefault(name, defaultV string) string {
+	v, ok := os.LookupEnv(name)
+	if !ok {
+		return defaultV
+	}
+	return v
 }
