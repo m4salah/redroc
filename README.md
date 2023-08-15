@@ -5,7 +5,7 @@
 
 ## TODO
 
-- make encryption/decryption key reead from env variable
+- make encryption/decryption key read from env variable
 
 ## Services
 
