@@ -1,6 +1,11 @@
 # Redroc
 
-Scalabale image service that allow users download, search, and upload images.
+- Scalabale image service that allow users download, search, and upload images.
+- Support for Encryption when uploading image, Decryption when downloading image.
+
+## TODO
+
+- make encryption/decryption key reead from env variable
 
 ## Services
 
