@@ -3,6 +3,10 @@
 - Scalabale image service that allow users download, search, and upload images.
 - Support for Encryption when uploading image, Decryption when downloading image.
 
+## To Use .env
+
+Rename .env.example to .env and fill the correct values.
+
 ## TODO
 
 - DONE: make encryption/decryption key read from env variable
