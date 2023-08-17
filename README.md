@@ -160,3 +160,7 @@ We cannot call those services directly, those services required authentication f
             returns (GetThumbnailImagesResponse);
         }
     ```
+
+## Resources
+
+- [Google Image Server](https://sre.google/classroom/imageserver/)
