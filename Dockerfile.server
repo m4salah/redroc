@@ -5,7 +5,12 @@ COPY restful restful
 COPY grpc/protos grpc/protos
 COPY util util
 COPY go.* ./
-RUN	CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/server restful/cmd/main.go
+
+# Set the release variable at build time
+ARG RELEASE_ARG
+ENV RELEASE=$RELEASE_ARG
+
+RUN	CGO_ENABLED=0 go build -ldflags="-s -w -X main.release=$RELEASE" -o bin/server restful/cmd/main.go
 
 FROM gcr.io/distroless/static-debian11
 
