@@ -21,6 +21,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+// release is set through the linker at build time, generally from a git sha.
+// Used for logging and error reporting.
+var release string
+
 var (
 	env                   = flag.String("env", "development", "Env")
 	firestoreLatestPath   = flag.String("firestore_latest_path", "latest", "path for storing latest images")
@@ -116,7 +120,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	logger, err := util.CreateLogger(*env)
+	logger, err := util.CreateLogger(*env, release)
 	if err != nil {
 		fmt.Println("Error setting up the logger:", err)
 		return
