@@ -27,14 +27,38 @@ import (
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
-func CreateLogger(env string) (*zap.Logger, error) {
+func createProductionLogger(release string) (*zap.Logger, error) {
+	logger, err := zap.NewProduction()
+	if err != nil {
+		return nil, err
+	}
+	logger = logger.With(zap.String("release", release))
+	return logger, nil
+}
+
+func createDevelopmentLogger(release string) (*zap.Logger, error) {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		return nil, err
+	}
+	logger = logger.With(zap.String("release", release))
+	return logger, nil
+}
+
+func createNopLogger(release string) (*zap.Logger, error) {
+	logger := zap.NewNop()
+	logger = logger.With(zap.String("release", release))
+	return logger, nil
+}
+
+func CreateLogger(env, release string) (*zap.Logger, error) {
 	switch env {
 	case "production":
-		return zap.NewProduction()
+		return createProductionLogger(release)
 	case "development":
-		return zap.NewDevelopment()
+		return createDevelopmentLogger(release)
 	default:
-		return zap.NewNop(), nil
+		return createNopLogger(release)
 	}
 }
 
