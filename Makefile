@@ -28,19 +28,19 @@ proto-search:
 proto: proto-download proto-upload proto-search
 
 build-download:
-	go build -o bin/download grpc/services/download/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/download grpc/services/download/main.go
 
 run-download: build-download
 	./bin/download -listen_port 8081
 
 build-upload:
-	go build -o bin/upload grpc/services/upload/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/upload grpc/services/upload/main.go
 
 run-upload: build-upload
 	./bin/upload -listen_port 8082
 
 build-search:
-	go build -o bin/search grpc/services/search/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/search grpc/services/search/main.go
 	
 run-search: build-search
 	./bin/search -listen_port 8083
@@ -80,7 +80,7 @@ deploy-server: docker-push-server
 
 # docker command for download.
 docker-build-download:
-	docker build -t redroc-download -f Dockerfile.download-grpc .
+	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-download -f Dockerfile.download-grpc .
 
 docker-run-download: docker-build-download
 	docker run -p 8080:8080 redroc-download:latest
@@ -101,7 +101,7 @@ deploy-download: docker-push-download
 
 # docker command for upload.
 docker-build-upload:
-	docker build -t redroc-upload -f Dockerfile.upload-grpc .
+	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-upload -f Dockerfile.upload-grpc .
 
 docker-run-upload: docker-build-upload
 	docker run -p 8080:8080 redroc-upload:latest
@@ -122,7 +122,7 @@ deploy-upload: docker-push-upload
 
 # docker command for search.
 docker-build-search:
-	docker build -t redroc-search -f Dockerfile.search-grpc .
+	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-search -f Dockerfile.search-grpc .
 
 docker-run-search: docker-build-search
 	docker run -p 8080:8080 redroc-search:latest
