@@ -1,4 +1,5 @@
 GOOGLE_PROJECT_ID?=carbon-relic-393513
+RELEASE:=$(shell git rev-parse --short HEAD)
 
 proto-download:
 	protoc                                      \
@@ -45,7 +46,7 @@ run-search: build-search
 	./bin/search -listen_port 8083
 
 build-server:
-	go build -o bin/server restful/cmd/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/server restful/cmd/main.go
 
 run-server: build-server
 	./bin/server -listen_port 8080               \
@@ -56,7 +57,7 @@ run-server: build-server
 
 # docker command for server.
 docker-build-server:
-	docker build -t redroc-server -f Dockerfile.server .
+	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-server -f Dockerfile.server .
 
 docker-run-server: docker-build-server
 	docker run -p 8080:8080 redroc-server:latest
