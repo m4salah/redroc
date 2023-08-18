@@ -37,12 +37,12 @@ func main() {
 func start() int {
 	flag.Parse()
 
-	logger, err := util.CreateLogger(*env)
+	logger, err := util.CreateLogger(*env, release)
 	if err != nil {
 		log.Println("Error setting up the logger:", err)
 		return 1
 	}
-	logger = logger.With(zap.String("release", release))
+
 	s := server.New(server.Options{
 		SkipGcloudAuth:      *skiptGcloudAuth,
 		Host:                *host,
