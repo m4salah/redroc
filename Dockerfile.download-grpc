@@ -5,7 +5,12 @@ COPY grpc grpc
 COPY .env .env
 COPY util util
 COPY go.* ./
-RUN	CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/download grpc/services/download/main.go
+
+# Set the release variable at build time
+ARG RELEASE_ARG
+ENV RELEASE=$RELEASE_ARG
+
+RUN	CGO_ENABLED=0 go build -ldflags="-s -w -X main.release=$RELEASE" -o bin/download grpc/services/download/main.go
 
 FROM gcr.io/distroless/static-debian11
 
