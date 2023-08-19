@@ -75,9 +75,6 @@ deploy-server: docker-push-server
 		--region us-central1  \
 		--allow-unauthenticated
 
-	gcloud run services update redroc-server --max-instances 5 --cpu 1 --memory 128Mi \
-		--service-account cloud-run-invoker@$(GOOGLE_PROJECT_ID).iam.gserviceaccount.com
-
 # docker command for download.
 docker-build-download:
 	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-download -f Dockerfile.download-grpc .
@@ -96,8 +93,6 @@ deploy-download: docker-push-download
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-download \
 		--platform managed \
 		--region us-central1  
-
-	gcloud run services update redroc-download --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
 
 # docker command for upload.
 docker-build-upload:
@@ -118,8 +113,6 @@ deploy-upload: docker-push-upload
 		--platform managed \
 		--region us-central1  
 
-	gcloud run services update redroc-upload --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
-
 # docker command for search.
 docker-build-search:
 	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-search -f Dockerfile.search-grpc .
@@ -139,7 +132,25 @@ deploy-search: docker-push-search
 		--platform managed \
 		--region us-central1  
 
-	gcloud run services update redroc-search --min-instances 0 --max-instances 5 --cpu 1 --memory 128Mi --use-http2
-
 # Deploy all services.
-deploy-all: deploy-server deploy-download deploy-upload deploy-search
+deploy-all: deploy-server deploy-download deploy-upload deploy-search deploy-frontend
+
+# docker command for frontend.
+docker-build-frontend:
+	cd frontend && docker build -t redroc-frontend -f Dockerfile .
+
+docker-run-frontend: docker-build-frontend
+	docker run -p 8080:8080 redroc-frontend:latest
+
+docker-tag-frontend: docker-build-frontend
+	docker tag redroc-frontend gcr.io/$(GOOGLE_PROJECT_ID)/redroc-frontend
+
+docker-push-frontend: docker-tag-frontend
+	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-frontend
+
+deploy-frontend: docker-push-frontend
+	gcloud run deploy redroc-frontend \
+  		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-frontend \
+		--platform managed \
+		--region us-central1  \
+		--allow-unauthenticated
