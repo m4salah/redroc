@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	MB = 1 << 20
+	_4MB = 4 * 1024 * 1024
 )
 
 // pingRequestWithAuth mints a new Identity Token for each request.
@@ -92,8 +92,14 @@ func pingCreateMetadataRequestWithAuth(backendTimeout time.Duration,
 
 func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration, skipAuth bool) {
 	mux.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
-
-		err := r.ParseMultipartForm(5 * MB)
+		r.Body = http.MaxBytesReader(w, r.Body, _4MB)
+		_, _, err := r.FormFile("file")
+		if err != nil {
+			log.Error("file is too large the limit is 4MB", zap.Error(err))
+			http.Error(w, "file is too large the limit is 4MB", http.StatusBadRequest)
+			return
+		}
+		err = r.ParseMultipartForm(_4MB)
 		if err != nil {
 			http.Error(w, "Error parsing form data", http.StatusBadRequest)
 			return
@@ -102,7 +108,7 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 		// Get the username
 		username := r.FormValue("username")
 		if username == "" {
-			log.Error("user name must be provided", zap.Error(err))
+			log.Error("username must be provided", zap.Error(err))
 			http.Error(w, "username must be provided", http.StatusBadRequest)
 			return
 		}
