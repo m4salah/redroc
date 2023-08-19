@@ -6,7 +6,11 @@ import (
 )
 
 func (s *Server) setupRoutes() {
+	// Middleware
+	s.mux.Use(middleware.CorsMiddleware)
 	s.mux.Use(middleware.AcceptContentTypeMiddleware)
+
+	// Handlers
 	handlers.Home(s.mux)
 	handlers.Health(s.mux)
 	handlers.Download(s.mux, s.downloadBackendAddr, s.log, s.connTimeout, s.skipGcloudAuth)
