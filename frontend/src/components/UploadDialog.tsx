@@ -101,8 +101,13 @@ export function UploadDialog() {
       });
   }
 
+  const onOpenDialog = (open: boolean) => {
+    setOpen(open);
+    if (!open) form.reset();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenDialog}>
       <DialogTrigger asChild>
         <Button variant={"secondary"}>Upload</Button>
       </DialogTrigger>
