@@ -1,11 +1,5 @@
 import { Button } from "@/shadcn/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shadcn/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/shadcn/ui/dialog";
 import { DownloadIcon } from "lucide-react";
 import Image from "next/image";
 
@@ -34,7 +28,7 @@ const toBase64 = (str: string) =>
 export function ViewImageDialog({ item }: Props) {
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild disabled>
         <Image
           placeholder={`data:image/svg+xml;base64,${toBase64(
             shimmer(700, 475)
@@ -47,24 +41,7 @@ export function ViewImageDialog({ item }: Props) {
           alt={item}
         />
       </DialogTrigger>
-      <DialogContent className="max-h-screen max-w-screen-2xl overflow-y-scroll">
-        <DialogHeader>
-          <DialogTitle>
-            <Button
-              onClick={() => {
-                window.open(
-                  new URL(
-                    item.replace("thumbnail_", ""),
-                    "https://api.redroc.xyz"
-                  ).toString(),
-                  "_blank"
-                );
-              }}
-            >
-              <DownloadIcon />
-            </Button>
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="h-5/6 max-w-screen-2xl overflow-y-scroll">
         <Image
           quality={100}
           placeholder={`data:image/svg+xml;base64,${toBase64(
@@ -75,10 +52,24 @@ export function ViewImageDialog({ item }: Props) {
             "https://api.redroc.xyz"
           ).toString()}
           className="h-full w-full rounded object-cover"
-          height={500}
-          width={1000}
           alt={item}
+          priority
+          fill
         />
+        <Button
+          className="absolute left-3 top-3"
+          onClick={() => {
+            window.open(
+              new URL(
+                item.replace("thumbnail_", ""),
+                "https://api.redroc.xyz"
+              ).toString(),
+              "_blank"
+            );
+          }}
+        >
+          <DownloadIcon />
+        </Button>
       </DialogContent>
     </Dialog>
   );
