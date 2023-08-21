@@ -54,14 +54,14 @@ export function ViewImageDialog({ item }: Props) {
             item.replace("thumbnail_", ""),
             "https://api.redroc.xyz"
           ).toString()}
-          className="h-full w-full rounded object-cover"
+          className="h-full w-full rounded object-contain"
           alt={item}
           priority
           fill
         />
         <Button
           className="absolute right-20 top-4"
-          variant={"secondary"}
+          variant={"default"}
           onClick={() => {
             window.open(
               new URL(
