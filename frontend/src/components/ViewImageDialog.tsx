@@ -2,6 +2,7 @@ import { Button } from "@/shadcn/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/shadcn/ui/dialog";
 import { DownloadIcon } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 interface Props {
   item: string;
@@ -26,9 +27,11 @@ const toBase64 = (str: string) =>
     : window.btoa(str);
 
 export function ViewImageDialog({ item }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
-      <DialogTrigger asChild disabled>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Image
           placeholder={`data:image/svg+xml;base64,${toBase64(
             shimmer(700, 475)
@@ -41,7 +44,7 @@ export function ViewImageDialog({ item }: Props) {
           alt={item}
         />
       </DialogTrigger>
-      <DialogContent className="h-5/6 max-w-screen-2xl overflow-y-scroll">
+      <DialogContent className="h-5/6 max-w-screen-2xl">
         <Image
           quality={100}
           placeholder={`data:image/svg+xml;base64,${toBase64(
@@ -57,7 +60,8 @@ export function ViewImageDialog({ item }: Props) {
           fill
         />
         <Button
-          className="absolute left-3 top-3"
+          className="absolute right-20 top-4"
+          variant={"secondary"}
           onClick={() => {
             window.open(
               new URL(
@@ -68,7 +72,7 @@ export function ViewImageDialog({ item }: Props) {
             );
           }}
         >
-          <DownloadIcon />
+          <DownloadIcon className="h-4 w-4" />
         </Button>
       </DialogContent>
     </Dialog>
