@@ -4,7 +4,6 @@ import { type AppType } from "next/app";
 import RootLayout from "~/components/RootLayout";
 import "~/styles/globals.css";
 
-
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
