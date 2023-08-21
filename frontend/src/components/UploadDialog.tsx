@@ -34,15 +34,10 @@ const formSchema = z.object({
   }),
   file: z
     .any()
-    .refine(
-      (file) => {
-        return file !== null;
-      },
-      {
-        message: "File is required.",
-      }
-    )
-    .refine((file: File) => file.size <= MAX_FILE_SIZE, {
+    .refine((file) => file !== null, {
+      message: "File is required.",
+    })
+    .refine((file: File) => file?.size <= MAX_FILE_SIZE, {
       message: `Max image size is 4MB.`,
     }),
   hashtags: z.string().min(2, {
