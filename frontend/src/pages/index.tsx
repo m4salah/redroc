@@ -12,7 +12,13 @@ type Repo = {
 export default function Home({
   repo,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  return (
+  return !repo.data ? (
+    <div className="flex h-full w-full items-center">
+      <p className="text text-center text-xl">
+        No images with that keyword, Try different keyword !!!
+      </p>
+    </div>
+  ) : (
     <ul role="list" className="flex flex-wrap justify-center gap-4">
       {repo.data.map((item) => (
         <li className="h-48 w-48 cursor-pointer rounded" key={item}>
