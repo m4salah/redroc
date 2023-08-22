@@ -19,7 +19,7 @@ export function Nav() {
   }, [router.query.q]);
 
   const handleSearch = (q: string) => {
-    void router.push({ query: { q } });
+    void router.push({ query: { q }, pathname: "/" });
   };
 
   return (
@@ -40,6 +40,8 @@ export function Nav() {
         <div className="flex h-fit flex-1 items-center justify-end gap-2 text-right">
           <div className="relative flex flex-row items-center gap-1">
             <Input
+              id="search"
+              name="search"
               type="text"
               placeholder="Search..."
               className="max-w-xs pr-10"
