@@ -136,6 +136,9 @@ deploy-search: docker-push-search
 deploy-all: deploy-server deploy-download deploy-upload deploy-search deploy-frontend
 
 # docker command for frontend.
+run-frontend:
+	cd frontend && npm run dev
+
 docker-build-frontend:
 	cd frontend && docker build -t redroc-frontend -f Dockerfile .
 
