@@ -25,7 +25,10 @@ export default function Home({
 
 export const getServerSideProps: GetServerSideProps<{
   repo: Repo;
-}> = async () => {
-  const { data } = await axios.get<string[]>("https://api.redroc.xyz/search");
+}> = async (context) => {
+  const q = context.query.q ?? "";
+  const { data } = await axios.get<string[]>("https://api.redroc.xyz/search", {
+    params: { q },
+  });
   return { props: { repo: { data } } };
 };
