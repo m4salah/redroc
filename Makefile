@@ -139,21 +139,5 @@ deploy-all: deploy-server deploy-download deploy-upload deploy-search deploy-fro
 run-frontend:
 	cd frontend && npm run dev
 
-docker-build-frontend:
-	cd frontend && docker build -t redroc-frontend -f Dockerfile .
-
-docker-run-frontend: docker-build-frontend
-	docker run -p 8080:8080 redroc-frontend:latest
-
-docker-tag-frontend: docker-build-frontend
-	docker tag redroc-frontend gcr.io/$(GOOGLE_PROJECT_ID)/redroc-frontend
-
-docker-push-frontend: docker-tag-frontend
-	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-frontend
-
-deploy-frontend: docker-push-frontend
-	gcloud run deploy redroc-frontend \
-  		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-frontend \
-		--platform managed \
-		--region us-central1  \
-		--allow-unauthenticated
+build-frontend:
+	cd frontend && npm run build
