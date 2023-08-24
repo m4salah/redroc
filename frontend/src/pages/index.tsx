@@ -1,8 +1,8 @@
-import axios from "axios";
 import {
   type GetServerSideProps,
   type InferGetServerSidePropsType,
 } from "next";
+import { redrocClient } from "~/apiClient/redrocClient";
 import { ViewImageDialog } from "~/components/ViewImageDialog";
 
 type Repo = {
@@ -33,7 +33,7 @@ export const getServerSideProps: GetServerSideProps<{
   repo: Repo;
 }> = async (context) => {
   const q = context.query.q ?? "";
-  const { data } = await axios.get<string[]>("https://api.redroc.xyz/search", {
+  const { data } = await redrocClient.get<string[]>("search", {
     params: { q },
   });
   return { props: { repo: { data } } };
