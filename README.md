@@ -3,6 +3,12 @@
 - Scalabale image service that allow users download, search, and upload images.
 - Support for Encryption when uploading image, Decryption when downloading image.
 
+## The Stack
+- Golang/Chi mux, gRPC for the backend.
+- NextJS for the frontend
+- GCP (Google Cloud Platform) for deploying the backend services.
+- Vercel for deploying the frontend.
+
 ## To Use .env
 
 Rename .env.example to .env and fill the correct values.
