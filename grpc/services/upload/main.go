@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	pb "github.com/m4salah/redroc/grpc/protos"
 	"github.com/m4salah/redroc/grpc/storage"
@@ -71,6 +72,23 @@ func (d *UploadServiceRPC) Upload(ctx context.Context, request *pb.UploadImageRe
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
+
+	// Simple client to talk to default-http example
+	uri := "ws://localhost:5000/ws"
+
+	c, _, err := websocket.DefaultDialer.Dial(uri, nil)
+	if err != nil {
+		log.Fatal("Error connecting:", err)
+	}
+	defer c.Close()
+
+	// Send a message to the server
+	message := "new image uploaded"
+	err = c.WriteMessage(websocket.TextMessage, []byte(message))
+	if err != nil {
+		log.Println("Error writing message:", err)
+	}
+
 	return &pb.UploadImageResponse{}, nil
 }
 
