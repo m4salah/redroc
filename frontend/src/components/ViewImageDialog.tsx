@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/shadcn/ui/dialog";
 import { DownloadIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { getImageURL, getThumbnailURL } from "~/lib/utils";
 
 interface Props {
   item: string;
@@ -36,7 +37,7 @@ export function ViewImageDialog({ item }: Props) {
           placeholder={`data:image/svg+xml;base64,${toBase64(
             shimmer(700, 475)
           )}`}
-          src={new URL(item, "https://api.redroc.xyz").toString()}
+          src={getThumbnailURL(item)}
           className="h-full w-full rounded object-cover transition-all duration-200 ease-in-out hover:scale-110"
           loading="lazy"
           height={192}
@@ -50,10 +51,7 @@ export function ViewImageDialog({ item }: Props) {
           placeholder={`data:image/svg+xml;base64,${toBase64(
             shimmer(700, 475)
           )}`}
-          src={new URL(
-            item.replace("thumbnail_", ""),
-            "https://api.redroc.xyz"
-          ).toString()}
+          src={getImageURL(item)}
           className="h-full w-full rounded object-contain"
           alt={item}
           priority
@@ -63,13 +61,7 @@ export function ViewImageDialog({ item }: Props) {
           className="absolute right-20 top-4"
           variant={"default"}
           onClick={() => {
-            window.open(
-              new URL(
-                item.replace("thumbnail_", ""),
-                "https://api.redroc.xyz"
-              ).toString(),
-              "_blank"
-            );
+            window.open(getImageURL(item), "_blank");
           }}
         >
           <DownloadIcon className="h-4 w-4" />
