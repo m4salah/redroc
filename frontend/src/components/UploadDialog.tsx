@@ -20,11 +20,11 @@ import {
 } from "@/shadcn/ui/form";
 import { Input } from "@/shadcn/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { redrocClient } from "~/apiClient/redrocClient";
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
 
@@ -68,8 +68,7 @@ export function UploadDialog() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+
     const formData = new FormData();
 
     const hashtags = JSON.stringify(
@@ -82,21 +81,22 @@ export function UploadDialog() {
     formData.append("hashtags", hashtags);
     console.log(values);
 
-    axios
-      .post("https://api.redroc.xyz/upload", formData, {
+    redrocClient
+      .post("upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data; charset=utf-8",
         },
       })
-      .then(() => {
+      .then(({ data }) => {
+        console.log(data);
         setIsLoading(false);
         refreshData();
         setOpen(false);
       })
       .catch((err) => {
+        console.log(err.response);
         setIsLoading(false);
         refreshData();
-        console.log(err);
         setOpen(false);
       });
   }
