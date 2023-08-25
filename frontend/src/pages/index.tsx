@@ -2,6 +2,7 @@ import {
   type GetServerSideProps,
   type InferGetServerSidePropsType,
 } from "next";
+import { useEffect } from "react";
 import { redrocClient } from "~/apiClient/redrocClient";
 import { ViewImageDialog } from "~/components/ViewImageDialog";
 
@@ -12,6 +13,20 @@ type Repo = {
 export default function Home({
   repo,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  useEffect(() => {
+    const io = new WebSocket("ws://api.redroc.xyz/ws");
+    io.onopen = () => {
+      console.log("connected");
+      io.send("hello");
+    };
+    io.onclose = () => {
+      console.log("closed");
+    };
+    io.onmessage = (e) => {
+      console.log("message", e.data);
+    };
+  }, []);
+
   return !repo.data ? (
     <div className="flex h-full w-full items-center">
       <p className="text text-center text-xl">
