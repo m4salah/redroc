@@ -24,6 +24,9 @@ const config = {
         port: '',
         pathname: '/download/**',
       },
+      {
+        hostname: 'localhost',
+      },
     ],
   },
 };
