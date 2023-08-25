@@ -2,7 +2,8 @@ import {
   type GetServerSideProps,
   type InferGetServerSidePropsType,
 } from "next";
-import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useEffect } from "react";
 import { redrocClient } from "~/apiClient/redrocClient";
 import { ViewImageDialog } from "~/components/ViewImageDialog";
 import { getSocketURL } from "~/lib/utils";
@@ -14,19 +15,27 @@ type Repo = {
 export default function Home({
   repo,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const router = useRouter();
+
+  const refreshData = useCallback(() => {
+    void router.replace(router.asPath);
+  }, [router]);
+
   useEffect(() => {
     const io = new WebSocket(getSocketURL());
     io.onopen = () => {
-      console.log("connected");
-      io.send("hello");
+      console.log("WS Connected");
     };
     io.onclose = () => {
       console.log("closed");
     };
     io.onmessage = (e) => {
-      console.log("message", e.data);
+      if (e.data === "new image") {
+        console.log("new image from console");
+        refreshData();
+      }
     };
-  }, []);
+  }, [refreshData]);
 
   return !repo.data ? (
     <div className="flex h-full w-full items-center">
