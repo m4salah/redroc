@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"net/url"
 	"path"
 	"sync/atomic"
 	"time"
@@ -32,7 +33,7 @@ var (
 	firestoreLatestPhotos = flag.Uint("firestore_latest_photos", 10, "number of latest images to store")
 	firestoreProject      = flag.String("firestore_project", "carbon-relic-393513", "firestore project to use for storing tags")
 	firestoreDryRun       = flag.Bool("firestore_dry_run", false, "disable firestore writes")
-	listenPort            = flag.Int("listen_port", 8080, "start server on this port")
+	listenPort            = flag.Int("listen_port", 8082, "start server on this port")
 	storageBucket         = flag.String("storage_bucket", "sre-classroom-image-server_photos-3", "storage bucket to use for storing photos")
 	storageDryRun         = flag.Bool("storage_dry_run", false, "disable storage bucket writes")
 	thumbnailHeight       = flag.Uint("thumbnail_height", 180, "height of the generated photo thumbnail")
@@ -47,13 +48,14 @@ type UploadServiceRPC struct {
 }
 
 func (d *UploadServiceRPC) Upload(ctx context.Context, request *pb.UploadImageRequest) (*pb.UploadImageResponse, error) {
+
+	// check if we are in dry run mode
+	if *storageDryRun {
+		return &pb.UploadImageResponse{}, nil
+	}
 	thumb, err := util.MakeThumbnail(request.Image, *thumbnailWidth, *thumbnailHeight)
 	if err != nil {
 		return nil, err
-	}
-
-	if *storageDryRun {
-		return &pb.UploadImageResponse{}, nil
 	}
 
 	eg := new(errgroup.Group)
@@ -73,26 +75,30 @@ func (d *UploadServiceRPC) Upload(ctx context.Context, request *pb.UploadImageRe
 		return nil, err
 	}
 
-	// Simple client to talk to default-http example
-	uri := "ws://localhost:5000/ws"
+	// TODO: Refactor this into own struct
+	// boradcast the new image to all connected clients
+	uri := url.URL{Scheme: "ws", Host: "api.redroc.xyz", Path: "/ws"}
+	log.Println("connecting to", zap.String("url", uri.String()))
 
-	c, _, err := websocket.DefaultDialer.Dial(uri, nil)
+	c, _, err := websocket.DefaultDialer.Dial(uri.String(), nil)
 	if err != nil {
-		log.Fatal("Error connecting:", err)
+		log.Println("Error connecting:", zap.Error(err))
 	}
 	defer c.Close()
 
 	// Send a message to the server
-	message := "new image uploaded"
-	err = c.WriteMessage(websocket.TextMessage, []byte(message))
+	err = c.WriteMessage(websocket.TextMessage, []byte("new image"))
 	if err != nil {
-		log.Println("Error writing message:", err)
+		log.Println("Error writing message:", zap.Error(err))
 	}
 
+	log.Println("end of the upload")
 	return &pb.UploadImageResponse{}, nil
 }
 
 func (d *UploadServiceRPC) CreateMetadata(ctx context.Context, request *pb.CreateMetadataRequest) (*pb.CreateMetadataResponse, error) {
+
+	// check if we are in dry run mode
 	if *firestoreDryRun {
 		return &pb.CreateMetadataResponse{}, nil
 	}
