@@ -14,7 +14,7 @@ export default function Home({
   repo,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   useEffect(() => {
-    const io = new WebSocket("ws://api.redroc.xyz/ws");
+    const io = new WebSocket("wss://api.redroc.xyz/ws");
     io.onopen = () => {
       console.log("connected");
       io.send("hello");
