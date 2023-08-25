@@ -24,3 +24,12 @@ export function getImageURL(thumbnailName: string): string {
     env.NEXT_PUBLIC_BACKEND_URL
   ).toString()
 }
+
+/**
+ * 
+ * @returns url string to the websocket endpoint
+ */
+export function getSocketURL(): string {
+  const [protocol, url] = env.NEXT_PUBLIC_BACKEND_URL.split("://")
+  return `${protocol === "https" ? "wss" : "ws"}://${url}/ws`
+}

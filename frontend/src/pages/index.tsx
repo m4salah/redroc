@@ -5,6 +5,7 @@ import {
 import { useEffect } from "react";
 import { redrocClient } from "~/apiClient/redrocClient";
 import { ViewImageDialog } from "~/components/ViewImageDialog";
+import { getSocketURL } from "~/lib/utils";
 
 type Repo = {
   data: string[];
@@ -14,7 +15,7 @@ export default function Home({
   repo,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   useEffect(() => {
-    const io = new WebSocket("wss://api.redroc.xyz/ws");
+    const io = new WebSocket(getSocketURL());
     io.onopen = () => {
       console.log("connected");
       io.send("hello");
