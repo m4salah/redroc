@@ -25,6 +25,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { redrocClient } from "~/apiClient/redrocClient";
+import { refreshData } from "~/lib/utils";
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
 
@@ -51,11 +52,6 @@ export function UploadDialog() {
   const [open, setOpen] = useState(false);
 
   const router = useRouter();
-  // Call this function whenever you want to
-  // refresh props!
-  const refreshData = () => {
-    void router.replace(router.asPath);
-  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -90,13 +86,13 @@ export function UploadDialog() {
       .then(({ data }) => {
         console.log(data);
         setIsLoading(false);
-        refreshData();
+        refreshData(router);
         setOpen(false);
       })
       .catch((err) => {
         console.log(err.response);
         setIsLoading(false);
-        refreshData();
+        refreshData(router);
         setOpen(false);
       });
   }
