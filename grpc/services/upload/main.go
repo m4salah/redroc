@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"net/url"
 	"path"
 	"sync/atomic"
 	"time"
@@ -38,6 +37,7 @@ var (
 	storageDryRun         = flag.Bool("storage_dry_run", false, "disable storage bucket writes")
 	thumbnailHeight       = flag.Uint("thumbnail_height", 180, "height of the generated photo thumbnail")
 	thumbnailPrefix       = flag.String("thumbnail_prefix", "thumbnail_", "name prefix to use for storing thumbnails")
+	socketUri             = flag.String("socket_uri", "ws://localhost:8080/ws", "address of the socket server")
 	thumbnailWidth        = flag.Uint("thumbnail_width", 320, "width of the generated photo thumbnail")
 	latestIdxFirestore    = rand.Uint32()
 )
@@ -77,10 +77,7 @@ func (d *UploadServiceRPC) Upload(ctx context.Context, request *pb.UploadImageRe
 
 	// TODO: Refactor this into own struct
 	// boradcast the new image to all connected clients
-	uri := url.URL{Scheme: "ws", Host: "api.redroc.xyz", Path: "/ws"}
-	log.Println("connecting to", zap.String("url", uri.String()))
-
-	c, _, err := websocket.DefaultDialer.Dial(uri.String(), nil)
+	c, _, err := websocket.DefaultDialer.Dial(*socketUri, nil)
 	if err != nil {
 		log.Println("Error connecting:", zap.Error(err))
 	}
