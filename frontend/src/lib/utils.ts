@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx"
+import { type NextRouter } from "next/router"
 import { twMerge } from "tailwind-merge"
 import { env } from "~/env.mjs"
 
@@ -33,3 +34,11 @@ export function getSocketURL(): string {
   const [protocol, url] = env.NEXT_PUBLIC_BACKEND_URL.split("://")
   return `${protocol === "https" ? "wss" : "ws"}://${url}/ws`
 }
+
+/**
+ * Refreshes the data on the current page
+ * @param router router object from NextRouter
+ */
+export const refreshData = (router: NextRouter) => {
+  void router.replace(router.asPath);
+};
