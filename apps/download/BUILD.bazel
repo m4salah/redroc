@@ -1,0 +1,51 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
+
+go_binary(
+    name = "download",
+    embed = [
+        ":download_lib",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "release_info",
+    outs = ["release_info"],
+    cmd = "echo \"release=$(git rev-parse --short HEAD)\" > $@",
+    visibility = ["//visibility:private"],
+)
+
+go_library(
+    name = "download_lib",
+    srcs = ["main.go"],
+    cgo = True,
+    copts = ["-ldflags=-s -w -X main.release=$(location //:release_info)"],
+    importpath = "github.com/m4salah/redroc/apps/download",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":release_info",
+        "//libs/proto",
+        "//libs/storage",
+        "//libs/util",
+        "@com_github_spf13_viper//:viper",
+        "@org_golang_google_grpc//:grpc",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_image(
+    name = "download_image",
+    base = "@go_image_static//image:image",
+    embed = [":download_lib"],
+)
+
+container_push(
+    name = "docker_push",
+    format = "Docker",
+    image = ":download_image",
+    registry = "gcr.io",
+    repository = "redroc-filestore-production/redroc-download",
+    tag = "latest",
+)

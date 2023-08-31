@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "socketio",
+    srcs = [
+        "client.go",
+        "manager.go",
+    ],
+    importpath = "github.com/m4salah/redroc/apps/server/pkg/socketio",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_gorilla_websocket//:websocket"],
+)

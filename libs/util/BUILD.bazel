@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "util",
+    srcs = ["util.go"],
+    importpath = "github.com/m4salah/redroc/libs/util",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_nfnt_resize//:resize",
+        "@com_github_spf13_viper//:viper",
+        "@org_golang_google_api//idtoken",
+        "@org_golang_google_grpc//credentials",
+        "@org_golang_google_grpc//credentials/insecure",
+        "@org_golang_google_grpc//metadata",
+        "@org_uber_go_zap//:zap",
+    ],
+)

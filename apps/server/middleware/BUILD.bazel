@@ -1,0 +1,11 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "middleware",
+    srcs = [
+        "content_type.go",
+        "cors.go",
+    ],
+    importpath = "github.com/m4salah/redroc/apps/server/middleware",
+    visibility = ["//visibility:public"],
+)

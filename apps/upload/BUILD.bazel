@@ -1,0 +1,41 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_docker//container:container.bzl", "container_push")
+
+go_binary(
+    name = "upload",
+    embed = [":upload_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "upload_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/m4salah/redroc/apps/upload",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//libs/proto",
+        "//libs/storage",
+        "//libs/util",
+        "@com_github_gorilla_websocket//:websocket",
+        "@org_golang_google_grpc//:grpc",
+        "@org_golang_x_sync//errgroup",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_image(
+    name = "upload_image",
+    base = "@go_image_static//image:image",
+    embed = [":upload_lib"],
+    pure = "on",
+)
+
+container_push(
+    name = "docker_push",
+    format = "Docker",
+    image = ":upload_image",
+    registry = "gcr.io",
+    repository = "redroc-filestore-production/redroc-upload",
+    tag = "latest",
+)

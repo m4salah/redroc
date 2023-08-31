@@ -1,0 +1,11 @@
+go 1.21
+
+use (
+	./apps/download
+	./apps/search
+	./apps/server
+	./apps/upload
+	./libs/proto
+	./libs/storage
+	./libs/util
+)

@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "handlers",
+    srcs = [
+        "download.go",
+        "health.go",
+        "home.go",
+        "search.go",
+        "socketio.go",
+        "upload.go",
+    ],
+    importpath = "github.com/m4salah/redroc/apps/server/handlers",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//apps/server/pkg/socketio",
+        "//libs/proto",
+        "//libs/util",
+        "@com_github_go_chi_chi_v5//:chi",
+        "@com_github_google_uuid//:uuid",
+        "@com_google_cloud_go_storage//:storage",
+        "@org_golang_google_grpc//:grpc",
+        "@org_golang_google_grpc//status",
+        "@org_golang_x_sync//errgroup",
+        "@org_uber_go_zap//:zap",
+    ],
+)
