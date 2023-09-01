@@ -1,20 +1,18 @@
-FROM golang:1.21.0-bullseye as build
+FROM golang:1.21-bullseye as build
 
 WORKDIR /
-COPY grpc grpc
-COPY .env .env
-COPY util util
-COPY go.* ./
+COPY ./apps/upload ./
+COPY ./libs ./libs
 
 # Set the release variable at build time
 ARG RELEASE_ARG
 ENV RELEASE=$RELEASE_ARG
 
-RUN	CGO_ENABLED=0 go build -ldflags="-s -w -X main.release=$RELEASE" -o bin/upload grpc/services/upload/main.go
+RUN	CGO_ENABLED=0 go build -ldflags="-s -w -X main.release=$RELEASE" -o bin/upload main.go
 
 FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /bin/upload /bin/upload
-COPY --from=build .env .env
+COPY --from=build /.env /.env
 
 ENTRYPOINT ["/bin/upload", "-listen_port", "8080", "-firestore_latest_photos", "30"]

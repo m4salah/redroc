@@ -7,7 +7,7 @@ proto-download:
 			--go_opt=paths=source_relative      \
 			--go-grpc_out=.                     \
 			--go-grpc_opt=paths=source_relative \
-			grpc/protos/download.proto
+			libs/proto/download.proto
 
 proto-upload:
 	protoc                                      \
@@ -15,7 +15,7 @@ proto-upload:
 			--go_opt=paths=source_relative      \
 			--go-grpc_out=.                     \
 			--go-grpc_opt=paths=source_relative \
-			grpc/protos/upload.proto
+			libs/proto/upload.proto
 
 proto-search:
 	protoc                                      \
@@ -23,30 +23,30 @@ proto-search:
 			--go_opt=paths=source_relative      \
 			--go-grpc_out=.                     \
 			--go-grpc_opt=paths=source_relative \
-			grpc/protos/search.proto
+			libs/proto/search.proto
 
 proto: proto-download proto-upload proto-search
 
 build-download:
-	go build -ldflags "-X main.release=$(RELEASE)" -o bin/download grpc/services/download/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/download apps/download/main.go
 
 run-download: build-download
 	./bin/download -listen_port 8081
 
 build-upload:
-	go build -ldflags "-X main.release=$(RELEASE)" -o bin/upload grpc/services/upload/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/upload apps/upload/main.go
 
 run-upload: build-upload
 	./bin/upload -listen_port 8082
 
 build-search:
-	go build -ldflags "-X main.release=$(RELEASE)" -o bin/search grpc/services/search/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/search apps/search/main.go
 	
 run-search: build-search
 	./bin/search -listen_port 8083
 
 build-server:
-	go build -ldflags "-X main.release=$(RELEASE)" -o bin/server restful/cmd/main.go
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/server apps/server/cmd/main.go
 
 run-server: build-server
 	./bin/server -listen_port 8080               \
@@ -137,7 +137,7 @@ deploy-all: deploy-server deploy-download deploy-upload deploy-search deploy-fro
 
 # docker command for frontend.
 run-frontend:
-	cd frontend && npm run dev
+	cd apps/frontend && npm run dev
 
 build-frontend:
-	cd frontend && npm run build
+	cd apps/frontend && npm run build

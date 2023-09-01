@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.6.1
-// source: lib/proto/download.proto
+// source: libs/proto/download.proto
 
 package proto
 
@@ -103,5 +103,5 @@ var DownloadPhoto_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "lib/proto/download.proto",
+	Metadata: "libs/proto/download.proto",
 }

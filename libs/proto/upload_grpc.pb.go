@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.6.1
-// source: lib/proto/upload.proto
+// source: libs/proto/upload.proto
 
 package proto
 
@@ -141,5 +141,5 @@ var UploadPhoto_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "lib/proto/upload.proto",
+	Metadata: "libs/proto/upload.proto",
 }
