@@ -8,6 +8,7 @@
 - NextJS for the frontend
 - GCP (Google Cloud Platform) for deploying the backend services.
 - Vercel for deploying the frontend.
+- Explore Bazel with this project.
 
 ## To Use .env
 
