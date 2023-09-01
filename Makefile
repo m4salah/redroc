@@ -31,28 +31,25 @@ build-download:
 	go build -ldflags "-X main.release=$(RELEASE)" -o bin/download apps/download/main.go
 
 run-download: build-download
-	./bin/download -listen_port 8081
+	cd apps/download && ../../bin/download -listen_port 8081
 
 build-upload:
 	go build -ldflags "-X main.release=$(RELEASE)" -o bin/upload apps/upload/main.go
 
 run-upload: build-upload
-	./bin/upload -listen_port 8082
+	cd apps/upload && ../../bin/upload -listen_port 8082
 
 build-search:
 	go build -ldflags "-X main.release=$(RELEASE)" -o bin/search apps/search/main.go
 	
 run-search: build-search
-	./bin/search -listen_port 8083
+	cd apps/search && ../../bin/search -listen_port 8083
 
 build-server:
 	go build -ldflags "-X main.release=$(RELEASE)" -o bin/server apps/server/cmd/main.go
 
 run-server: build-server
-	./bin/server -listen_port 8080               \
-		-download_backend_address localhost:8081 \
-		-upload_backend_address   localhost:8082 \
-		-search_backend_address   localhost:8083 \
+	cd apps/server && ../../bin/server -listen_port 8080               \
 		-skip_gcloud_auth 		  true
 
 # docker command for server.
