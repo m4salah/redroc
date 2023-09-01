@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	pb "github.com/m4salah/redroc/libs/proto"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -19,20 +19,19 @@ import (
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
 func pingSearchRequestWithAuth(backendTimeout time.Duration,
 	backendAddr string,
-	log *zap.Logger,
 	p *pb.GetThumbnailImagesRequest,
 	audience string,
 	skipAuth bool) (*pb.GetThumbnailImagesResponse, error) {
 
 	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
-		log.Fatal("failed to load system root CA cert pool")
+		slog.Error("failed to load system root CA cert pool")
 	}
 
 	conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(creds))
 
 	if err != nil {
-		log.Error("Cannot dial to grpc service", zap.Error(err))
+		slog.Error("Cannot dial to grpc service", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("grpc.Dial: %w", err)
 	}
 
@@ -50,22 +49,22 @@ func pingSearchRequestWithAuth(backendTimeout time.Duration,
 	return client.GetThumbnail(ctx, p, grpc.WaitForReady(true))
 }
 
-func Search(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration, skipAuth bool) {
+func Search(mux chi.Router, backendAddr string, backendTimeout time.Duration, skipAuth bool) {
 	mux.Get("/search", func(w http.ResponseWriter, r *http.Request) {
 		// get the query string
 		q := r.URL.Query().Get("q")
-		log.Info("searching for", zap.String("q", q))
+		slog.Info("searching for", slog.String("q", q))
 		request := &pb.GetThumbnailImagesRequest{SearchKeyword: q}
-		response, err := pingSearchRequestWithAuth(backendTimeout, backendAddr, log, request, util.ExtractServiceURL(backendAddr), skipAuth)
+		response, err := pingSearchRequestWithAuth(backendTimeout, backendAddr, request, util.ExtractServiceURL(backendAddr), skipAuth)
 		if err != nil {
-			log.Error("search request failed", zap.Error(err))
+			slog.Error("search request failed", slog.String("error", err.Error()))
 			http.Error(w, "search request failed", http.StatusBadRequest)
 			return
 		}
 
 		urls, err := json.Marshal(response.StorageUrl)
 		if err != nil {
-			log.Error("json marshal failed", zap.Error(err))
+			slog.Error("json marshal failed", slog.String("error", err.Error()))
 			http.Error(w, "Something Wrong", http.StatusInternalServerError)
 			return
 		}

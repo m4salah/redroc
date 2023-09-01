@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,7 +11,6 @@ import (
 
 	"github.com/m4salah/redroc/apps/server/server"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -43,16 +42,11 @@ func main() {
 func start() int {
 	flag.Parse()
 
-	logger, err := util.CreateLogger(*env, release)
-	if err != nil {
-		log.Println("Error setting up the logger:", err)
-		return 1
-	}
+	util.CreateLogger(*env, release)
 
 	s := server.New(server.Options{
 		SkipGcloudAuth:      *skiptGcloudAuth,
 		Host:                *host,
-		Log:                 logger,
 		Port:                *listenPort,
 		ConnTimeout:         *backendTimeout,
 		DownloadBackendAddr: config.DownloadBackendAddr,
@@ -66,7 +60,7 @@ func start() int {
 
 	eg.Go(func() error {
 		if err := s.Start(); err != nil {
-			logger.Info("Error starting server", zap.Error(err))
+			slog.Error("Error starting server", slog.String("err", err.Error()))
 			return err
 		}
 		return nil
@@ -76,7 +70,7 @@ func start() int {
 
 	eg.Go(func() error {
 		if err := s.Stop(); err != nil {
-			logger.Info("Error stopping server", zap.Error(err))
+			slog.Error("Error stopping server", slog.String("err", err.Error()))
 			return err
 		}
 		return nil

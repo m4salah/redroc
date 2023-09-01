@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	pb "github.com/m4salah/redroc/libs/proto"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
@@ -20,18 +20,17 @@ import (
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
 func pingDownloadRequestWithAuth(backendTimeout time.Duration,
 	backendAddr string,
-	log *zap.Logger,
 	p *pb.DownloadPhotoRequest,
 	audience string,
 	skipAuth bool) (*pb.DownloadPhotoResponse, error) {
 	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
-		log.Fatal("failed to load system root CA cert pool")
+		slog.Error("failed to load system root CA cert pool")
 	}
 	conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(creds))
 
 	if err != nil {
-		log.Error("Cannot dial to grpc service", zap.Error(err))
+		slog.Error("Cannot dial to grpc service", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("grpc.Dial: %w", err)
 	}
 
@@ -49,15 +48,15 @@ func pingDownloadRequestWithAuth(backendTimeout time.Duration,
 	return client.Download(ctx, p, grpc.WaitForReady(true))
 }
 
-func Download(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration, skipAuth bool) {
+func Download(mux chi.Router, backendAddr string, backendTimeout time.Duration, skipAuth bool) {
 	mux.Get("/download/{imgName}", func(w http.ResponseWriter, r *http.Request) {
 		imgName := chi.URLParam(r, "imgName")
 
 		request := &pb.DownloadPhotoRequest{ImgName: imgName}
 
-		response, err := pingDownloadRequestWithAuth(backendTimeout, backendAddr, log, request, util.ExtractServiceURL(backendAddr), skipAuth)
+		response, err := pingDownloadRequestWithAuth(backendTimeout, backendAddr, request, util.ExtractServiceURL(backendAddr), skipAuth)
 		if err != nil {
-			log.Error("downloading image failed", zap.Error(err))
+			slog.Error("downloading image failed", slog.String("error", err.Error()))
 			grpcStatus, ok := status.FromError(err)
 			if ok && grpcStatus.Message() == storage.ErrObjectNotExist.Error() {
 				http.Error(w, "Image not found", http.StatusNotFound)

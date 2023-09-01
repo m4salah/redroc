@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
@@ -26,20 +26,19 @@ const (
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
 func pingUploadRequestWithAuth(backendTimeout time.Duration,
 	backendAddr string,
-	log *zap.Logger,
 	p *pb.UploadImageRequest,
 	audience string,
 	skipAuth bool) (*pb.UploadImageResponse, error) {
 
 	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
-		log.Fatal("failed to load system root CA cert pool")
+		slog.Error("failed to load system root CA cert pool")
 	}
 
 	conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(creds))
 
 	if err != nil {
-		log.Error("Cannot dial to grpc service", zap.Error(err))
+		slog.Error("Cannot dial to grpc service", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("grpc.Dial: %w", err)
 	}
 
@@ -59,20 +58,19 @@ func pingUploadRequestWithAuth(backendTimeout time.Duration,
 
 func pingCreateMetadataRequestWithAuth(backendTimeout time.Duration,
 	backendAddr string,
-	log *zap.Logger,
 	p *pb.CreateMetadataRequest,
 	audience string,
 	skipAuth bool) (*pb.CreateMetadataResponse, error) {
 
 	creds, err := util.CreateTransportCredentials(skipAuth)
 	if err != nil {
-		log.Fatal("failed to load system root CA cert pool")
+		slog.Error("failed to load system root CA cert pool")
 	}
 
 	conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(creds))
 
 	if err != nil {
-		log.Error("Cannot dial to grpc service", zap.Error(err))
+		slog.Error("Cannot dial to grpc service", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("grpc.Dial: %w", err)
 	}
 
@@ -90,12 +88,12 @@ func pingCreateMetadataRequestWithAuth(backendTimeout time.Duration,
 	return client.CreateMetadata(ctx, p, grpc.WaitForReady(true))
 }
 
-func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout time.Duration, skipAuth bool) {
+func Upload(mux chi.Router, backendAddr string, backendTimeout time.Duration, skipAuth bool) {
 	mux.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, _4MB)
 		_, _, err := r.FormFile("file")
 		if err != nil {
-			log.Error("file is too large the limit is 4MB", zap.Error(err))
+			slog.Error("file is too large the limit is 4MB", slog.String("error", err.Error()))
 			http.Error(w, "file is too large the limit is 4MB", http.StatusBadRequest)
 			return
 		}
@@ -108,7 +106,7 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 		// Get the username
 		username := r.FormValue("username")
 		if username == "" {
-			log.Error("username must be provided", zap.Error(err))
+			slog.Error("username must be provided", slog.String("error", err.Error()))
 			http.Error(w, "username must be provided", http.StatusBadRequest)
 			return
 		}
@@ -116,7 +114,7 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 		// Get the hashtags
 		hashtags, err := util.GetTags(r)
 		if err != nil {
-			log.Error("getting tags failes", zap.Error(err))
+			slog.Error("getting tags failes", slog.String("error", err.Error()))
 			http.Error(w, "Invalid tags", http.StatusBadRequest)
 			return
 
@@ -125,7 +123,7 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 		// Access the array of strings using the field name
 		blob, filename, err := util.GetPhoto(r)
 		if err != nil {
-			log.Error("Getting file failed", zap.Error(err))
+			slog.Error("Getting file failed", slog.String("error", err.Error()))
 			http.Error(w, "Getting file failed", http.StatusBadRequest)
 			return
 		}
@@ -136,7 +134,7 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 
 		eg.Go(func() error {
 			uploadRequest := &pb.UploadImageRequest{ObjName: objName, Image: blob}
-			_, err = pingUploadRequestWithAuth(backendTimeout, backendAddr, log, uploadRequest, util.ExtractServiceURL(backendAddr), skipAuth)
+			_, err = pingUploadRequestWithAuth(backendTimeout, backendAddr, uploadRequest, util.ExtractServiceURL(backendAddr), skipAuth)
 			if err != nil {
 				return fmt.Errorf("photo upload failed: %v", err)
 			}
@@ -146,14 +144,14 @@ func Upload(mux chi.Router, backendAddr string, log *zap.Logger, backendTimeout 
 		eg.Go(func() error {
 			metadataRequest := &pb.CreateMetadataRequest{
 				ObjName: objName, User: username, Hashtags: hashtags}
-			_, err = pingCreateMetadataRequestWithAuth(backendTimeout, backendAddr, log, metadataRequest, util.ExtractServiceURL(backendAddr), skipAuth)
+			_, err = pingCreateMetadataRequestWithAuth(backendTimeout, backendAddr, metadataRequest, util.ExtractServiceURL(backendAddr), skipAuth)
 			if err != nil {
 				return fmt.Errorf("metadata create failed: %v", err)
 			}
 			return nil
 		})
 		if err := eg.Wait(); err != nil {
-			log.Error("Error while uploading or creating metadata", zap.Error(err))
+			slog.Error("Error while uploading or creating metadata", slog.String("error", err.Error()))
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
