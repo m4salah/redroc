@@ -132,7 +132,7 @@ deploy-search: docker-push-search
 		--region us-central1  
 
 # Deploy all services.
-deploy-all: deploy-server deploy-download deploy-upload deploy-search deploy-frontend
+deploy-all: deploy-server deploy-download deploy-upload deploy-search
 
 # docker command for frontend.
 run-frontend:
