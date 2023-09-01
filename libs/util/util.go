@@ -15,6 +15,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"reflect"
@@ -51,7 +52,14 @@ func bindEnvs(iface interface{}, parts ...string) {
 
 // Builds config - error handling omitted fore brevity
 func LoadConfig[Config any](c Config) Config {
+	// load from .env file
+	viper.AddConfigPath(".")
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AutomaticEnv()
 	viper.ReadInConfig()
+
+	// load from env variables
 	bindEnvs(c)
 	viper.Unmarshal(&c)
 	return c
@@ -82,6 +90,13 @@ func createNopLogger(release string) (*zap.Logger, error) {
 }
 
 func CreateLogger(env, release string) (*zap.Logger, error) {
+	logHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}).WithAttrs([]slog.Attr{
+		slog.Group("environment", slog.String("release", release), slog.String("env", env)),
+	})
+	logger := slog.New(logHandler)
+	slog.SetDefault(logger)
+
+	slog.Info("Creating logger")
 	switch env {
 	case "production":
 		return createProductionLogger(release)
