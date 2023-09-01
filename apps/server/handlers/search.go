@@ -53,7 +53,9 @@ func Search(mux chi.Router, backendAddr string, backendTimeout time.Duration, sk
 	mux.Get("/search", func(w http.ResponseWriter, r *http.Request) {
 		// get the query string
 		q := r.URL.Query().Get("q")
-		slog.Info("searching for", slog.String("q", q))
+
+		slog.Info("Searching for", slog.String("searchQuery", q))
+
 		request := &pb.GetThumbnailImagesRequest{SearchKeyword: q}
 		response, err := pingSearchRequestWithAuth(backendTimeout, backendAddr, request, util.ExtractServiceURL(backendAddr), skipAuth)
 		if err != nil {

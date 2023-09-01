@@ -52,6 +52,7 @@ func Download(mux chi.Router, backendAddr string, backendTimeout time.Duration, 
 	mux.Get("/download/{imgName}", func(w http.ResponseWriter, r *http.Request) {
 		imgName := chi.URLParam(r, "imgName")
 
+		slog.Info("Downloading image", slog.String("imageName", imgName))
 		request := &pb.DownloadPhotoRequest{ImgName: imgName}
 
 		response, err := pingDownloadRequestWithAuth(backendTimeout, backendAddr, request, util.ExtractServiceURL(backendAddr), skipAuth)

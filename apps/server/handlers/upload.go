@@ -133,6 +133,7 @@ func Upload(mux chi.Router, backendAddr string, backendTimeout time.Duration, sk
 		eg := new(errgroup.Group)
 
 		eg.Go(func() error {
+			slog.Info("Uploading image", slog.String("imageName", objName))
 			uploadRequest := &pb.UploadImageRequest{ObjName: objName, Image: blob}
 			_, err = pingUploadRequestWithAuth(backendTimeout, backendAddr, uploadRequest, util.ExtractServiceURL(backendAddr), skipAuth)
 			if err != nil {
@@ -142,8 +143,14 @@ func Upload(mux chi.Router, backendAddr string, backendTimeout time.Duration, sk
 		})
 
 		eg.Go(func() error {
+			slog.Info("Writing metadata for image",
+				slog.String("imageName", objName),
+				slog.String("username", username),
+				slog.Any("hashtags", hashtags))
+
 			metadataRequest := &pb.CreateMetadataRequest{
 				ObjName: objName, User: username, Hashtags: hashtags}
+
 			_, err = pingCreateMetadataRequestWithAuth(backendTimeout, backendAddr, metadataRequest, util.ExtractServiceURL(backendAddr), skipAuth)
 			if err != nil {
 				return fmt.Errorf("metadata create failed: %v", err)
