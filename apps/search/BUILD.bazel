@@ -5,6 +5,10 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_push")
 go_binary(
     name = "search",
     embed = [":search_lib"],
+    gc_linkopts = [
+        "-X",
+        "main.release=bazelbuild",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -26,6 +30,12 @@ go_image(
     name = "search_image",
     base = "@go_image_static//image:image",
     embed = [":search_lib"],
+    gc_linkopts = [
+        "-s",
+        "-w",
+        "-X",
+        "main.release=bazelbuild",
+    ],
     pure = "on",
 )
 
