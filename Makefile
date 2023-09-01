@@ -1,4 +1,6 @@
-GOOGLE_PROJECT_ID?=carbon-relic-393513
+# load .env file to get access to GOOGLE_PROJECT_ID
+include .env
+
 RELEASE:=$(shell git rev-parse --short HEAD)
 
 proto-download:
@@ -138,3 +140,11 @@ run-frontend:
 
 build-frontend:
 	cd apps/frontend && npm run build
+
+mod-tidy:
+	cd apps/download && go mod tidy
+	cd apps/upload && go mod tidy
+	cd apps/search && go mod tidy
+	cd apps/server && go mod tidy
+	cd libs/util && go mod tidy
+	cd libs/storage && go mod tidy
