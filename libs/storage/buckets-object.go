@@ -5,21 +5,19 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 
 	"cloud.google.com/go/storage"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 )
 
 type BucketsObject struct {
 	bucketName string
-	log        *zap.Logger
 }
 
 // NewBucketsOptions for MetadateStorage.
 type NewBucketsOptions struct {
 	BucketName string
-	Log        *zap.Logger
 }
 
 // NewBuckets with the given options.
@@ -28,20 +26,16 @@ func NewBuckets(opts NewBucketsOptions) (*BucketsObject, error) {
 	if opts.BucketName == "" {
 		return nil, fmt.Errorf("BucketName must be provided")
 	}
-	if opts.Log == nil {
-		opts.Log = zap.NewNop()
-	}
 	return &BucketsObject{
-		log:        opts.Log,
 		bucketName: opts.BucketName,
 	}, nil
 }
 
 func (b *BucketsObject) Store(ctx context.Context, objName string, data []byte) error {
-	b.log.Info("Storing Image to cloud storage", zap.String("objName", objName))
+	slog.Info("Storing Image to cloud storage", slog.String("objName", objName))
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		b.log.Error("storage client failed", zap.Error(err))
+		slog.Error("storage client failed", err)
 		return err
 	}
 	defer client.Close()
@@ -76,10 +70,10 @@ func (b *BucketsObject) Store(ctx context.Context, objName string, data []byte) 
 }
 
 func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error) {
-	bo.log.Info("Getting Object from cloud storage", zap.String("objName", objName))
+	slog.Info("Getting Object from cloud storage", slog.String("objName", objName))
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		bo.log.Error("storage client failed", zap.Error(err))
+		slog.Error("storage client failed", err)
 		return nil, err
 	}
 	defer client.Close()
@@ -88,14 +82,14 @@ func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error
 	r, err := blob.NewReader(ctx)
 	if err != nil {
 		if err == storage.ErrBucketNotExist {
-			bo.log.Error("Bucket doesn't exists", zap.String("bucketName", bo.bucketName), zap.Error(err))
+			slog.Error("Bucket doesn't exists", slog.String("bucketName", bo.bucketName), err)
 			return nil, err
 		}
 		if err == storage.ErrObjectNotExist {
-			bo.log.Error("Object doesn't exists", zap.String("objName", objName), zap.Error(err))
+			slog.Error("Object doesn't exists", slog.String("objName", objName), err)
 			return nil, err
 		}
-		bo.log.Error("storage reader failed", zap.String("objName", objName), zap.String("bucketName", bo.bucketName), zap.Error(err))
+		slog.Error("storage reader failed", slog.String("objName", objName), slog.String("bucketName", bo.bucketName), err)
 		return nil, err
 	}
 	defer r.Close()
@@ -103,7 +97,7 @@ func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error
 	var b bytes.Buffer
 	_, err = b.ReadFrom(r)
 	if err != nil {
-		bo.log.Error("storage reading failed", zap.String("objName", objName), zap.Error(err))
+		slog.Error("storage reading failed", slog.String("objName", objName), err)
 		return nil, err
 	}
 	// DONE: make secret from env variable

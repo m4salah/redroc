@@ -4,12 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net"
 
 	pb "github.com/m4salah/redroc/libs/proto"
 	"github.com/m4salah/redroc/libs/storage"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -28,7 +28,6 @@ var (
 
 type SearchServiceRPC struct {
 	pb.UnimplementedGetThumbnailServer
-	Log        *zap.Logger
 	MetadataDB storage.MetadataDB
 }
 
@@ -49,18 +48,12 @@ type Config struct {
 
 func main() {
 	flag.Parse()
-	logger, err := util.CreateLogger(*env, release)
-
-	if err != nil {
-		fmt.Println("Error setting up the logger:", err)
-		return
-	}
+	util.InitializeSlog(*env, release)
 
 	// load env variables
 	config := util.LoadConfig(Config{})
 
 	filestore, err := storage.NewFilestore(storage.NewFilestoreOptions{ProjectID: config.FilestoreProject,
-		Log:             logger,
 		FilestoreLatest: *firestoreLatestPath,
 		ThumbnailPerfix: *thumbnailPrefix,
 	})
@@ -71,14 +64,14 @@ func main() {
 	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *listenPort))
 	if err != nil {
-		logger.Fatal("failed to listen", zap.Int("port", *listenPort), zap.Error(err))
+		slog.Error("failed to listen", slog.Int("port", *listenPort), slog.String("error", err.Error()))
 		return
 	}
 	grpcServer := grpc.NewServer()
-	pb.RegisterGetThumbnailServer(grpcServer, &SearchServiceRPC{MetadataDB: filestore, Log: logger})
+	pb.RegisterGetThumbnailServer(grpcServer, &SearchServiceRPC{MetadataDB: filestore})
 
-	logger.Info("starting GRPC server", zap.Int("port", *listenPort))
+	slog.Info("starting GRPC server", slog.Int("port", *listenPort))
 	if err := grpcServer.Serve(listener); err != nil {
-		logger.Fatal("Failed to serve", zap.Int("port", *listenPort))
+		slog.Error("Failed to serve", slog.Int("port", *listenPort))
 	}
 }

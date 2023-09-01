@@ -42,7 +42,7 @@ func main() {
 func start() int {
 	flag.Parse()
 
-	util.CreateLogger(*env, release)
+	util.InitializeSlog(*env, release)
 
 	s := server.New(server.Options{
 		SkipGcloudAuth:      *skiptGcloudAuth,

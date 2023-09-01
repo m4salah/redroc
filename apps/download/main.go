@@ -4,12 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net"
 
 	pb "github.com/m4salah/redroc/libs/proto"
 	"github.com/m4salah/redroc/libs/storage"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -25,8 +25,7 @@ var (
 
 type DownloadServiceRPC struct {
 	pb.UnimplementedDownloadPhotoServer
-	Log *zap.Logger
-	DB  storage.ObjectDB
+	DB storage.ObjectDB
 }
 
 func (d *DownloadServiceRPC) Download(ctx context.Context, request *pb.DownloadPhotoRequest) (*pb.DownloadPhotoResponse, error) {
@@ -51,26 +50,23 @@ func main() {
 	config := util.LoadConfig(Config{})
 
 	// load env variables
-	logger, err := util.CreateLogger(*env, release)
-	if err != nil {
-		fmt.Println("Error setting up the logger:", err)
-		return
-	}
-	bucket, err := storage.NewBuckets(storage.NewBucketsOptions{Log: logger, BucketName: config.StorageBucket})
+	util.InitializeSlog(*env, release)
+
+	bucket, err := storage.NewBuckets(storage.NewBucketsOptions{BucketName: config.StorageBucket})
 	if err != nil {
 		fmt.Println("Error initializing Bucket", err)
 		return
 	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *listenPort))
 	if err != nil {
-		logger.Fatal("failed to listen", zap.Int("port", *listenPort), zap.Error(err))
+		slog.Error("failed to listen", slog.Int("port", *listenPort), slog.String("error", err.Error()))
 		return
 	}
 	grpcServer := grpc.NewServer()
-	pb.RegisterDownloadPhotoServer(grpcServer, &DownloadServiceRPC{DB: bucket, Log: logger})
+	pb.RegisterDownloadPhotoServer(grpcServer, &DownloadServiceRPC{DB: bucket})
 
-	logger.Info("starting GRPC server", zap.Int("port", *listenPort))
+	slog.Info("starting GRPC server", slog.Int("port", *listenPort))
 	if err := grpcServer.Serve(listener); err != nil {
-		logger.Fatal("Failed to serve", zap.Int("port", *listenPort))
+		slog.Error("Failed to serve", slog.Int("port", *listenPort))
 	}
 }

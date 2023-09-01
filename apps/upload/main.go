@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"math/rand"
 	"net"
 	"path"
@@ -15,7 +16,6 @@ import (
 	pb "github.com/m4salah/redroc/libs/proto"
 	"github.com/m4salah/redroc/libs/storage"
 	"github.com/m4salah/redroc/libs/util"
-	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
@@ -39,7 +39,6 @@ var (
 
 type UploadServiceRPC struct {
 	pb.UnimplementedUploadPhotoServer
-	Log        *zap.Logger
 	DB         storage.ObjectDB
 	MetadataDB storage.MetadataDB
 }
@@ -85,14 +84,14 @@ func (d *UploadServiceRPC) Upload(ctx context.Context, request *pb.UploadImageRe
 	// boradcast the new image to all connected clients
 	c, _, err := websocket.DefaultDialer.Dial(config.SockerUri, nil)
 	if err != nil {
-		log.Println("Error connecting:", zap.Error(err))
+		slog.Error("Error connecting:", slog.String("error", err.Error()))
 	}
 	defer c.Close()
 
 	// Send a message to the server
 	err = c.WriteMessage(websocket.TextMessage, []byte("new image"))
 	if err != nil {
-		log.Println("Error writing message:", zap.Error(err))
+		slog.Error("Error writing message:", slog.String("error", err.Error()))
 	}
 
 	log.Println("end of the upload")
@@ -144,18 +143,13 @@ func main() {
 	// load env variables
 	config = util.LoadConfig(Config{})
 
-	logger, err := util.CreateLogger(*env, release)
-	if err != nil {
-		fmt.Println("Error setting up the logger:", err)
-		return
-	}
-	bucket, err := storage.NewBuckets(storage.NewBucketsOptions{Log: logger, BucketName: config.StorageBucket})
+	util.InitializeSlog(*env, release)
+	bucket, err := storage.NewBuckets(storage.NewBucketsOptions{BucketName: config.StorageBucket})
 	if err != nil {
 		fmt.Println("Error initializing Bucket", err)
 		return
 	}
 	filestore, err := storage.NewFilestore(storage.NewFilestoreOptions{ProjectID: config.FilestoreProject,
-		Log:             logger,
 		FilestoreLatest: *firestoreLatestPath,
 		ThumbnailPerfix: *thumbnailPrefix})
 	if err != nil {
@@ -164,14 +158,14 @@ func main() {
 	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *listenPort))
 	if err != nil {
-		logger.Fatal("failed to listen", zap.Int("port", *listenPort), zap.Error(err))
+		slog.Error("failed to listen", slog.Int("port", *listenPort), slog.String("error", err.Error()))
 		return
 	}
 	grpcServer := grpc.NewServer()
-	pb.RegisterUploadPhotoServer(grpcServer, &UploadServiceRPC{DB: bucket, MetadataDB: filestore, Log: logger})
+	pb.RegisterUploadPhotoServer(grpcServer, &UploadServiceRPC{DB: bucket, MetadataDB: filestore})
 
-	logger.Info("starting GRPC server", zap.Int("port", *listenPort))
+	slog.Info("starting GRPC server", slog.Int("port", *listenPort))
 	if err := grpcServer.Serve(listener); err != nil {
-		logger.Fatal("Failed to serve", zap.Int("port", *listenPort))
+		slog.Error("Failed to serve", slog.Int("port", *listenPort))
 	}
 }

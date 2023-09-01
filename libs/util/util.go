@@ -24,7 +24,6 @@ import (
 
 	"github.com/nfnt/resize"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"google.golang.org/api/idtoken"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -65,46 +64,12 @@ func LoadConfig[Config any](c Config) Config {
 	return c
 }
 
-func createProductionLogger(release string) (*zap.Logger, error) {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		return nil, err
-	}
-	logger = logger.With(zap.String("release", release))
-	return logger, nil
-}
-
-func createDevelopmentLogger(release string) (*zap.Logger, error) {
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		return nil, err
-	}
-	logger = logger.With(zap.String("release", release))
-	return logger, nil
-}
-
-func createNopLogger(release string) (*zap.Logger, error) {
-	logger := zap.NewNop()
-	logger = logger.With(zap.String("release", release))
-	return logger, nil
-}
-
-func CreateLogger(env, release string) (*zap.Logger, error) {
+func InitializeSlog(env, release string) {
 	logHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}).WithAttrs([]slog.Attr{
 		slog.Group("environment", slog.String("release", release), slog.String("env", env)),
 	})
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
-
-	slog.Info("Creating logger")
-	switch env {
-	case "production":
-		return createProductionLogger(release)
-	case "development":
-		return createDevelopmentLogger(release)
-	default:
-		return createNopLogger(release)
-	}
 }
 
 func GetPhoto(r *http.Request) ([]byte, string, error) {

@@ -3,17 +3,16 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path"
 	"strconv"
 
 	"cloud.google.com/go/firestore"
-	"go.uber.org/zap"
 	"google.golang.org/api/iterator"
 )
 
 type FilestoreMetadata struct {
 	projectID        string
-	log              *zap.Logger
 	filestoreLatest  string
 	thumbnailsPrefix string
 }
@@ -21,7 +20,6 @@ type FilestoreMetadata struct {
 // NewMetadateStorageOptions for MetadateStorage.
 type NewFilestoreOptions struct {
 	ProjectID       string
-	Log             *zap.Logger
 	FilestoreLatest string
 	ThumbnailPerfix string
 }
@@ -38,11 +36,7 @@ func NewFilestore(opts NewFilestoreOptions) (*FilestoreMetadata, error) {
 	if opts.ThumbnailPerfix == "" {
 		return nil, fmt.Errorf("ThumbnailPerfix must be provided")
 	}
-	if opts.Log == nil {
-		opts.Log = zap.NewNop()
-	}
 	return &FilestoreMetadata{
-		log:              opts.Log,
 		projectID:        opts.ProjectID,
 		thumbnailsPrefix: opts.ThumbnailPerfix,
 		filestoreLatest:  opts.FilestoreLatest,
@@ -50,10 +44,10 @@ func NewFilestore(opts NewFilestoreOptions) (*FilestoreMetadata, error) {
 }
 
 func (f *FilestoreMetadata) StorePath(ctx context.Context, path string, timestamp int64) error {
-	f.log.Info("Storing metadata Path")
+	slog.Info("Storing metadata Path")
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
-		f.log.Error("firestore client failed", zap.Error(err))
+		slog.Error("firestore client failed", slog.String("error", err.Error()))
 		return err
 	}
 	defer client.Close()
@@ -69,10 +63,10 @@ func (f *FilestoreMetadata) StorePath(ctx context.Context, path string, timestam
 }
 
 func (f *FilestoreMetadata) StorePathWithUser(ctx context.Context, user, path string, timestamp int64) error {
-	f.log.Info("Storing metadata Path with user")
+	slog.Info("Storing metadata Path with user")
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
-		f.log.Error("firestore client failed", zap.Error(err))
+		slog.Error("firestore client failed", slog.String("error", err.Error()))
 		return err
 	}
 	defer client.Close()
@@ -89,10 +83,10 @@ func (f *FilestoreMetadata) StorePathWithUser(ctx context.Context, user, path st
 }
 
 func (f *FilestoreMetadata) StoreLatest(ctx context.Context, index uint32, latest, objName string) error {
-	f.log.Info("Storing metadata Latest")
+	slog.Info("Storing metadata Latest")
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
-		f.log.Error("firestore client failed", zap.Error(err))
+		slog.Error("firestore client failed", slog.String("error", err.Error()))
 		return err
 	}
 	defer client.Close()
@@ -123,7 +117,7 @@ func (f *FilestoreMetadata) GetThumbnails(
 
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
-		f.log.Error("firestore client failed", zap.Error(err))
+		slog.Error("firestore client failed", slog.String("error", err.Error()))
 		return nil, err
 	}
 	defer client.Close()
