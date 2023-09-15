@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"log/slog"
 	"math/rand"
 	"net"
@@ -60,41 +59,41 @@ func (d *UploadServiceRPC) Upload(ctx context.Context, request *pb.UploadImageRe
 	}
 	thumb, err := util.MakeThumbnail(request.Image, *thumbnailWidth, *thumbnailHeight)
 	if err != nil {
+		slog.Error("error making the thumbnail", "error", err)
 		return nil, err
 	}
 
 	eg := new(errgroup.Group)
 
+	// encrypt the image and the thumbnail
+	encryptedImage, err := util.EncryptAES(request.Image, []byte(config.EncryptionKey))
+	if err != nil {
+		slog.Error("error encrypting the image", "error", err)
+		return nil, err
+	}
+
+	encryptedThumb, err := util.EncryptAES(thumb, []byte(config.EncryptionKey))
+	if err != nil {
+		slog.Error("error encrypting the thumbnail", "error", err)
+		return nil, err
+	}
+
 	// Store the original image
 	eg.Go(func() error {
-		return d.DB.Store(ctx, request.ObjName, request.Image)
+		return d.DB.Store(ctx, request.ObjName, encryptedImage)
 	})
 
 	// Store the thumbnail image
 	eg.Go(func() error {
-		return d.DB.Store(ctx, *thumbnailPrefix+request.ObjName, thumb)
+		return d.DB.Store(ctx, *thumbnailPrefix+request.ObjName, encryptedThumb)
 	})
 
 	// check if either the operation failed
 	if err := eg.Wait(); err != nil {
+		slog.Error("error while uploading the image and the thumbnail", "error", err)
 		return nil, err
 	}
 
-	// TODO: Refactor this into own struct
-	// boradcast the new image to all connected clients
-	c, _, err := websocket.DefaultDialer.Dial(config.SockerUri, nil)
-	if err != nil {
-		slog.Error("Error connecting:", slog.String("error", err.Error()))
-	}
-	defer c.Close()
-
-	// Send a message to the server
-	err = c.WriteMessage(websocket.TextMessage, []byte("new image"))
-	if err != nil {
-		slog.Error("Error writing message:", slog.String("error", err.Error()))
-	}
-
-	log.Println("end of the upload")
 	return &pb.UploadImageResponse{}, nil
 }
 
@@ -132,9 +131,36 @@ func (d *UploadServiceRPC) CreateMetadata(ctx context.Context, request *pb.Creat
 	})
 
 	if err := eg.Wait(); err != nil {
+		slog.Error("error creating the metadata", "error", err)
 		return nil, err
 	}
 	return &pb.CreateMetadataResponse{}, nil
+}
+
+func (d *UploadServiceRPC) ImageUploaded(ctx context.Context, request *pb.ImageUploadedRequest) (*pb.ImageUploadedResponse, error) {
+
+	slog.Info("upload image triggered",
+		slog.String("imageNmae", request.ObjName),
+		slog.String("username", request.User),
+		slog.Any("hashtags", request.Hashtags),
+	)
+
+	// TODO: Refactor this into own struct
+	// boradcast the new image to all connected clients
+	c, _, err := websocket.DefaultDialer.Dial(config.SockerUri, nil)
+	if err != nil {
+		slog.Error("error connecting to the websocket server", slog.String("error", err.Error()))
+	} else {
+		// Send a message to the server
+		// TODO: refactor the message to it's own constant
+		err = c.WriteMessage(websocket.TextMessage, []byte("new image"))
+		if err != nil {
+			slog.Error("error writing message:", slog.String("error", err.Error()))
+		}
+	}
+	defer c.Close()
+
+	return &pb.ImageUploadedResponse{}, nil
 }
 
 func main() {
