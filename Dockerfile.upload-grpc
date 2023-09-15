@@ -13,6 +13,5 @@ RUN	CGO_ENABLED=0 go build -ldflags="-s -w -X main.release=$RELEASE" -o bin/uplo
 FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /bin/upload /bin/upload
-COPY --from=build /.env /.env
 
 ENTRYPOINT ["/bin/upload", "-listen_port", "8080", "-firestore_latest_photos", "30"]

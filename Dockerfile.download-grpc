@@ -13,6 +13,5 @@ RUN	CGO_ENABLED=0 go build -ldflags="-s -w -X main.release=$RELEASE" -o bin/down
 FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /bin/download /bin/download
-COPY --from=build /.env /.env
 
 ENTRYPOINT ["/bin/download", "-listen_port", "8080"]
