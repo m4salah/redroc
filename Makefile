@@ -141,6 +141,7 @@ run-frontend:
 build-frontend:
 	cd apps/frontend && npm run build
 
+# Go commands.
 mod-tidy:
 	cd apps/download && go mod tidy
 	cd apps/upload && go mod tidy
