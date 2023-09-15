@@ -8,7 +8,6 @@ import (
 	"log/slog"
 
 	"cloud.google.com/go/storage"
-	"github.com/m4salah/redroc/libs/util"
 )
 
 type BucketsObject struct {
@@ -44,16 +43,10 @@ func (b *BucketsObject) Store(ctx context.Context, objName string, data []byte) 
 
 	obj := bucket.Object(objName)
 	w := obj.NewWriter(ctx)
-	// DONE: make secret from env variable
-	secret := util.GetStringOrDefault("ENCRYPTION_KEY", "")
-	if secret == "" {
-		return fmt.Errorf("ENCRYPTION_KEY must be provided")
-	}
-	encryptedData, err := util.EncryptAES(data, []byte(secret))
 	if err != nil {
 		return fmt.Errorf("storage encryption failed: %v", err)
 	}
-	r := bytes.NewReader(encryptedData)
+	r := bytes.NewReader(data)
 
 	_, err = io.Copy(w, r)
 
@@ -99,10 +92,6 @@ func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error
 	if err != nil {
 		slog.Error("storage reading failed", slog.String("objName", objName), err)
 		return nil, err
-	}
-	secret := util.GetStringOrDefault("ENCRYPTION_KEY", "")
-	if secret == "" {
-		return nil, fmt.Errorf("ENCRYPTION_KEY must be provided")
 	}
 	return b.Bytes(), nil
 }
