@@ -54,6 +54,9 @@ run-server: build-server
 	cd apps/server && ../../bin/server -listen_port 8080               \
 		-skip_gcloud_auth 		  true
 
+run-all: 
+	make -j 5 run-download run-upload run-search run-server run-frontend
+
 # docker command for server.
 docker-build-server:
 	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-server -f Dockerfile.server .
