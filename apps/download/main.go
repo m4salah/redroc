@@ -23,6 +23,8 @@ var (
 	storageDryRun = flag.Bool("storage_dry_run", false, "disable storage bucket reads")
 )
 
+var config Config
+
 type DownloadServiceRPC struct {
 	pb.UnimplementedDownloadPhotoServer
 	DB storage.ObjectDB
@@ -32,11 +34,20 @@ func (d *DownloadServiceRPC) Download(ctx context.Context, request *pb.DownloadP
 	if *storageDryRun {
 		return &pb.DownloadPhotoResponse{}, nil
 	}
-	image, err := d.DB.Get(ctx, request.ImgName)
+	// get the encrypted image from the datastore
+	encryptedImage, err := d.DB.Get(ctx, request.ImgName)
 	if err != nil {
+		slog.Error("error while getting the image", "error", err)
 		return nil, err
 	}
-	return &pb.DownloadPhotoResponse{ImgBlob: image}, nil
+
+	// decrypt the image
+	decryptedImage, err := util.DecryptAES(encryptedImage, []byte(config.EncryptionKey))
+	if err != nil {
+		slog.Error("error while decrypting the image", "error", err)
+		return nil, err
+	}
+	return &pb.DownloadPhotoResponse{ImgBlob: decryptedImage}, nil
 }
 
 type Config struct {
@@ -47,14 +58,14 @@ type Config struct {
 func main() {
 	flag.Parse()
 
-	config := util.LoadConfig(Config{})
+	config = util.LoadConfig(Config{})
 
 	// load env variables
 	util.InitializeSlog(*env, release)
 
 	bucket, err := storage.NewBuckets(storage.NewBucketsOptions{BucketName: config.StorageBucket})
 	if err != nil {
-		fmt.Println("Error initializing Bucket", err)
+		slog.Error("failed to initialize the bucket", slog.String("bucketName", config.StorageBucket))
 		return
 	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *listenPort))
