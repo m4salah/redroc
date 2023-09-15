@@ -26,6 +26,8 @@ type UploadPhotoClient interface {
 	Upload(ctx context.Context, in *UploadImageRequest, opts ...grpc.CallOption) (*UploadImageResponse, error)
 	// RPC for create hashtag-image mapping in the metadata database
 	CreateMetadata(ctx context.Context, in *CreateMetadataRequest, opts ...grpc.CallOption) (*CreateMetadataResponse, error)
+	// RPC triggered if the image uploaded (event)
+	ImageUploaded(ctx context.Context, in *ImageUploadedRequest, opts ...grpc.CallOption) (*ImageUploadedResponse, error)
 }
 
 type uploadPhotoClient struct {
@@ -54,6 +56,15 @@ func (c *uploadPhotoClient) CreateMetadata(ctx context.Context, in *CreateMetada
 	return out, nil
 }
 
+func (c *uploadPhotoClient) ImageUploaded(ctx context.Context, in *ImageUploadedRequest, opts ...grpc.CallOption) (*ImageUploadedResponse, error) {
+	out := new(ImageUploadedResponse)
+	err := c.cc.Invoke(ctx, "/grpc.UploadPhoto/ImageUploaded", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UploadPhotoServer is the server API for UploadPhoto service.
 // All implementations must embed UnimplementedUploadPhotoServer
 // for forward compatibility
@@ -62,6 +73,8 @@ type UploadPhotoServer interface {
 	Upload(context.Context, *UploadImageRequest) (*UploadImageResponse, error)
 	// RPC for create hashtag-image mapping in the metadata database
 	CreateMetadata(context.Context, *CreateMetadataRequest) (*CreateMetadataResponse, error)
+	// RPC triggered if the image uploaded (event)
+	ImageUploaded(context.Context, *ImageUploadedRequest) (*ImageUploadedResponse, error)
 	mustEmbedUnimplementedUploadPhotoServer()
 }
 
@@ -74,6 +87,9 @@ func (UnimplementedUploadPhotoServer) Upload(context.Context, *UploadImageReques
 }
 func (UnimplementedUploadPhotoServer) CreateMetadata(context.Context, *CreateMetadataRequest) (*CreateMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMetadata not implemented")
+}
+func (UnimplementedUploadPhotoServer) ImageUploaded(context.Context, *ImageUploadedRequest) (*ImageUploadedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageUploaded not implemented")
 }
 func (UnimplementedUploadPhotoServer) mustEmbedUnimplementedUploadPhotoServer() {}
 
@@ -124,6 +140,24 @@ func _UploadPhoto_CreateMetadata_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UploadPhoto_ImageUploaded_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImageUploadedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UploadPhotoServer).ImageUploaded(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.UploadPhoto/ImageUploaded",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UploadPhotoServer).ImageUploaded(ctx, req.(*ImageUploadedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UploadPhoto_ServiceDesc is the grpc.ServiceDesc for UploadPhoto service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -138,6 +172,10 @@ var UploadPhoto_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateMetadata",
 			Handler:    _UploadPhoto_CreateMetadata_Handler,
+		},
+		{
+			MethodName: "ImageUploaded",
+			Handler:    _UploadPhoto_ImageUploaded_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
