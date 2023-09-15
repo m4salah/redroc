@@ -100,10 +100,9 @@ func (bo *BucketsObject) Get(ctx context.Context, objName string) ([]byte, error
 		slog.Error("storage reading failed", slog.String("objName", objName), err)
 		return nil, err
 	}
-	// DONE: make secret from env variable
 	secret := util.GetStringOrDefault("ENCRYPTION_KEY", "")
 	if secret == "" {
 		return nil, fmt.Errorf("ENCRYPTION_KEY must be provided")
 	}
-	return util.DecryptAES(b.Bytes(), []byte(secret))
+	return b.Bytes(), nil
 }
