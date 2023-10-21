@@ -152,3 +152,7 @@ mod-tidy:
 	cd apps/server && go mod tidy
 	cd libs/util && go mod tidy
 	cd libs/storage && go mod tidy
+
+# rust commands
+server-rs:
+	cargo run --bin server
