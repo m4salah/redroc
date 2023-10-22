@@ -16,7 +16,8 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/health", get(health))
-        .route("/download/:img_name", get(handlers::download::get_img));
+        .route("/download/:img_name", get(handlers::download::get_img))
+        .route("/search", get(handlers::search::search));
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())

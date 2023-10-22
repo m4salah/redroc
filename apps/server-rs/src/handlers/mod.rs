@@ -3,3 +3,4 @@ pub mod grpc {
 }
 
 pub mod download;
+pub mod search;
