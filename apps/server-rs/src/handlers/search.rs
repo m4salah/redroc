@@ -13,6 +13,7 @@ pub struct Params {
 
 pub async fn search(Query(params): Query<Params>) -> impl IntoResponse {
     // TODO: We need a way to handle the error better
+    // TODO: We need to make this url into env variable
     let mut client = GetThumbnailClient::connect("https://redroc-search-jo7doiawta-uc.a.run.app")
         .await
         .unwrap();
