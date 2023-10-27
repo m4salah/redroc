@@ -1,21 +1,12 @@
 use std::env;
 
-use axum::response::{Html, IntoResponse, Response};
 use axum::{routing::get, Router};
 use clap::Parser;
 use config::Config;
-use handlers::{download, search};
+use handlers::{download, health, index, search};
 
 mod config;
 mod handlers;
-
-async fn index() -> Html<&'static str> {
-    Html("<h1>Welcome to Redroc</h1>")
-}
-
-async fn health() -> Response {
-    String::from("healthy!").into_response()
-}
 
 #[derive(Clone)]
 pub struct AppState {
