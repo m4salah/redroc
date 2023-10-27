@@ -1,9 +1,10 @@
-use std::env;
+use std::{env, net::SocketAddr};
 
 use axum::{routing::get, Router};
 use clap::Parser;
 use config::Config;
 use handlers::{download, health, index, search};
+use tower_http::trace::TraceLayer;
 
 mod config;
 mod handlers;
@@ -25,6 +26,16 @@ async fn main() {
 
     // Initialize the logger.
     env_logger::init();
+    let subscriber = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_target(false)
+        .json()
+        .finish();
+    // use that subscriber to process traces emitted after this point
+    tracing::subscriber::set_global_default(subscriber).unwrap();
+
+    // tracing layer
+    let tracing_layer = TraceLayer::new_for_http();
 
     // Parse our configuration from the environment.
     // This will exit with a help message if something is wrong.
@@ -36,9 +47,13 @@ async fn main() {
         .route("/health", get(health))
         .route("/download/:img_name", get(download::get_img))
         .route("/search", get(search::search))
-        .with_state(app_state);
+        .with_state(app_state)
+        .layer(tracing_layer);
 
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    tracing::info!("listening on {}", addr);
+
+    axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
