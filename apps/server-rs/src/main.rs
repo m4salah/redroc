@@ -4,6 +4,7 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::{routing::get, Router};
 use clap::Parser;
 use config::Config;
+use handlers::{download, search};
 
 mod config;
 mod handlers;
@@ -42,8 +43,8 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/health", get(health))
-        .route("/download/:img_name", get(handlers::download::get_img))
-        .route("/search", get(handlers::search::search))
+        .route("/download/:img_name", get(download::get_img))
+        .route("/search", get(search::search))
         .with_state(app_state);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
