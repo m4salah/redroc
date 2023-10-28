@@ -40,7 +40,9 @@ async fn main() {
     // Parse our configuration from the environment.
     // This will exit with a help message if something is wrong.
     let config = config::Config::parse();
-    let app_state = AppState { config };
+    let app_state = AppState {
+        config: config.clone(),
+    };
 
     let app = Router::new()
         .route("/", get(index))
@@ -50,7 +52,7 @@ async fn main() {
         .with_state(app_state)
         .layer(tracing_layer);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     tracing::info!("listening on {}", addr);
 
     axum::Server::bind(&addr)

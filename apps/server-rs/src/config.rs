@@ -8,4 +8,7 @@ pub struct Config {
 
     #[clap(long, env)]
     pub search_backend_addr: String,
+
+    #[clap(long, env)]
+    pub port: u16,
 }
