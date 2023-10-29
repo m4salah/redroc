@@ -1,6 +1,7 @@
-FROM rust:1.73-slim-bullseye AS build
+FROM rust:1.73-slim-bullseye AS builder
 
-WORKDIR /
+RUN apt update -y && apt install protobuf-compiler -y
+WORKDIR /app
 COPY ./apps/server-rs ./apps/server-rs
 COPY ./libs ./libs
 COPY ./build.rs ./
@@ -9,8 +10,7 @@ COPY ./Cargo.lock ./
 
 RUN	cargo build --release
 
-FROM gcr.io/distroless/static-debian11
-
-COPY --from=build /target/release/server /bin/server
+FROM gcr.io/distroless/cc
+COPY --from=builder /app/target/release/server /bin/server
 
 ENTRYPOINT ["/bin/server"]
