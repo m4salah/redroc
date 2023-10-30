@@ -79,18 +79,18 @@ deploy-server: docker-push-server
 
 # docker command for server-rs.
 docker-build-server-rs:
-	docker build --build-arg -t redroc-server-rs -f Dockerfile.server-rs .
+	docker build -t redroc-server-rs -f Dockerfile.server-rs .
 
-docker-run-server-rs: docker-build-server
-	docker run -p 8080:8080 redroc-server:latest
+docker-run-server-rs: docker-build-server-rs
+	docker run -p 8080:8080 redroc-server-rs:latest
 
-docker-tag-server-rs: docker-build-server
+docker-tag-server-rs: docker-build-server-rs
 	docker tag redroc-server-rs gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server-rs
 
-docker-push-server-rs: docker-tag-server
+docker-push-server-rs: docker-tag-server-rs
 	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server-rs
 
-deploy-server-rs: docker-push-server
+deploy-server-rs: docker-push-server-rs
 	gcloud run deploy redroc-server-rs \
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server-rs \
 		--platform managed \
