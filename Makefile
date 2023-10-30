@@ -77,6 +77,26 @@ deploy-server: docker-push-server
 		--region us-central1  \
 		--allow-unauthenticated
 
+# docker command for server-rs.
+docker-build-server-rs:
+	docker build --build-arg -t redroc-server-rs -f Dockerfile.server-rs .
+
+docker-run-server-rs: docker-build-server
+	docker run -p 8080:8080 redroc-server:latest
+
+docker-tag-server-rs: docker-build-server
+	docker tag redroc-server-rs gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server-rs
+
+docker-push-server-rs: docker-tag-server
+	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server-rs
+
+deploy-server-rs: docker-push-server
+	gcloud run deploy redroc-server-rs \
+  		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-server-rs \
+		--platform managed \
+		--region us-central1  \
+		--allow-unauthenticated
+
 # docker command for download.
 docker-build-download:
 	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-download -f Dockerfile.download-grpc .
