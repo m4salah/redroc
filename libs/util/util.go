@@ -22,46 +22,21 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/caarlos0/env/v10"
+	"github.com/joho/godotenv"
 	"github.com/nfnt/resize"
-	"github.com/spf13/viper"
 	"google.golang.org/api/idtoken"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
-func bindEnvs(iface interface{}, parts ...string) {
-	ifv := reflect.ValueOf(iface)
-	ift := reflect.TypeOf(iface)
-	for i := 0; i < ift.NumField(); i++ {
-		v := ifv.Field(i)
-		t := ift.Field(i)
-		tv, ok := t.Tag.Lookup("mapstructure")
-		if !ok {
-			continue
-		}
-		switch v.Kind() {
-		case reflect.Struct:
-			bindEnvs(v.Interface(), append(parts, tv)...)
-		default:
-			viper.BindEnv(strings.Join(append(parts, tv), "."))
-		}
-	}
-}
-
 // Builds config - error handling omitted fore brevity
-func LoadConfig[Config any](c Config) Config {
-	// load from .env file
-	viper.AddConfigPath(".")
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
-	viper.AutomaticEnv()
-	viper.ReadInConfig()
-
-	// load from env variables
-	bindEnvs(c)
-	viper.Unmarshal(&c)
-	return c
+func LoadConfig[Config any](c *Config) error {
+	// Loading the environment variables from '.env' file.
+	// ignore the error because on the server we will the env variable from the OS Environment
+	godotenv.Load()
+	return env.ParseWithOptions(c, env.Options{RequiredIfNoDef: true}) // 👈 Parse environment variables into `Config`
 }
 
 func InitializeSlog(env, release string) {

@@ -167,7 +167,11 @@ func main() {
 	flag.Parse()
 
 	// load env variables
-	config = util.LoadConfig(Config{})
+	err := util.LoadConfig(&config)
+
+	if err != nil {
+		panic(err)
+	}
 
 	util.InitializeSlog(*env, release)
 	bucket, err := storage.NewBuckets(storage.NewBucketsOptions{BucketName: config.StorageBucket})

@@ -51,14 +51,18 @@ func (d *DownloadServiceRPC) Download(ctx context.Context, request *pb.DownloadP
 }
 
 type Config struct {
-	EncryptionKey string `mapstructure:"ENCRYPTION_KEY"`
-	StorageBucket string `mapstructure:"STORAGE_BUCKET"`
+	EncryptionKey string `env:"ENCRYPTION_KEY,notEmpty,required"`
+	StorageBucket string `env:"STORAGE_BUCKET,notEmpty,required"`
 }
 
 func main() {
 	flag.Parse()
 
-	config = util.LoadConfig(Config{})
+	err := util.LoadConfig(&config)
+
+	if err != nil {
+		panic(err)
+	}
 
 	// load env variables
 	util.InitializeSlog(*env, release)

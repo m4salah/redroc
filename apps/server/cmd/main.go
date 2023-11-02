@@ -29,13 +29,16 @@ var release string
 var config Config
 
 type Config struct {
-	DownloadBackendAddr string `mapstructure:"DOWNLOAD_BACKEND_ADDR"`
-	UploadBackendAddr   string `mapstructure:"UPLOAD_BACKEND_ADDR"`
-	SearchBackendAddr   string `mapstructure:"SEARCH_BACKEND_ADDR"`
+	DownloadBackendAddr string `env:"DOWNLOAD_BACKEND_ADDR,notEmpty"`
+	UploadBackendAddr   string `env:"UPLOAD_BACKEND_ADDR,notEmpty"`
+	SearchBackendAddr   string `env:"SEARCH_BACKEND_ADDR,notEmpty"`
 }
 
 func main() {
-	config = util.LoadConfig(Config{})
+	err := util.LoadConfig(&config)
+	if err != nil {
+		panic(err)
+	}
 	os.Exit(start())
 }
 
@@ -43,7 +46,6 @@ func start() int {
 	flag.Parse()
 
 	util.InitializeSlog(*env, release)
-
 	s := server.New(server.Options{
 		SkipGcloudAuth:      *skiptGcloudAuth,
 		Host:                *host,
