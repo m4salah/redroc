@@ -35,8 +35,7 @@ type Config struct {
 }
 
 func main() {
-	err := util.LoadConfig(&config)
-	if err != nil {
+	if err := util.LoadConfig(&config); err != nil {
 		panic(err)
 	}
 	os.Exit(start())

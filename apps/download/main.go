@@ -58,13 +58,11 @@ type Config struct {
 func main() {
 	flag.Parse()
 
-	err := util.LoadConfig(&config)
-
-	if err != nil {
+	// load env variables
+	if err := util.LoadConfig(&config); err != nil {
 		panic(err)
 	}
 
-	// load env variables
 	util.InitializeSlog(*env, release)
 
 	bucket, err := storage.NewBuckets(storage.NewBucketsOptions{BucketName: config.StorageBucket})

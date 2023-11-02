@@ -53,9 +53,7 @@ func main() {
 	util.InitializeSlog(*env, release)
 
 	// load env variables
-	err := util.LoadConfig(&config)
-
-	if err != nil {
+	if err := util.LoadConfig(&config); err != nil {
 		panic(err)
 	}
 
