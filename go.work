@@ -8,4 +8,5 @@ use (
 	./libs/proto
 	./libs/storage
 	./libs/util
+	./libs/pubsub
 )
