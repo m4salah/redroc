@@ -43,7 +43,7 @@ func (s *SearchServiceRPC) GetThumbnail(ctx context.Context, request *pb.GetThum
 }
 
 type Config struct {
-	FilestoreProject string `mapstructure:"FILESTORE_PROJECT"`
+	FilestoreProject string `env:"FILESTORE_PROJECT,notEmpty"`
 }
 
 var config Config

@@ -51,8 +51,8 @@ func (d *DownloadServiceRPC) Download(ctx context.Context, request *pb.DownloadP
 }
 
 type Config struct {
-	EncryptionKey string `env:"ENCRYPTION_KEY,notEmpty,required"`
-	StorageBucket string `env:"STORAGE_BUCKET,notEmpty,required"`
+	EncryptionKey string `env:"ENCRYPTION_KEY,notEmpty"`
+	StorageBucket string `env:"STORAGE_BUCKET,notEmpty"`
 }
 
 func main() {

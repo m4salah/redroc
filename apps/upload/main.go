@@ -43,10 +43,10 @@ type UploadServiceRPC struct {
 }
 
 type Config struct {
-	EncryptionKey    string `mapstructure:"ENCRYPTION_KEY"`
-	SockerUri        string `mapstructure:"SOCKET_URI"`
-	FilestoreProject string `mapstructure:"FILESTORE_PROJECT"`
-	StorageBucket    string `mapstructure:"STORAGE_BUCKET"`
+	EncryptionKey    string `env:"ENCRYPTION_KEY,notEmpty"`
+	SockerUri        string `env:"SOCKET_URI,notEmpty"`
+	FilestoreProject string `env:"FILESTORE_PROJECT,notEmpty"`
+	StorageBucket    string `env:"STORAGE_BUCKET,notEmpty"`
 }
 
 var config Config
