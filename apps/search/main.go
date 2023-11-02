@@ -46,12 +46,18 @@ type Config struct {
 	FilestoreProject string `mapstructure:"FILESTORE_PROJECT"`
 }
 
+var config Config
+
 func main() {
 	flag.Parse()
 	util.InitializeSlog(*env, release)
 
 	// load env variables
-	config := util.LoadConfig(Config{})
+	err := util.LoadConfig(&config)
+
+	if err != nil {
+		panic(err)
+	}
 
 	filestore, err := storage.NewFilestore(storage.NewFilestoreOptions{ProjectID: config.FilestoreProject,
 		FilestoreLatest: *firestoreLatestPath,
