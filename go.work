@@ -5,6 +5,7 @@ use (
 	./apps/search
 	./apps/server
 	./apps/upload
+	./apps/migrator
 	./libs/proto
 	./libs/storage
 	./libs/util

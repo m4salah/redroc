@@ -18,7 +18,7 @@ var (
 	backendTimeout  = flag.Duration("backend_timeout", 1*time.Minute, "backend request timeout")
 	listenPort      = flag.Int("listen_port", 8080, "start server on this port")
 	host            = flag.String("host", "", "start server on this host")
-	env             = flag.String("env", "development", "Env")
+	env             = flag.String("env", "local", "Env")
 	skiptGcloudAuth = flag.Bool("skip_gcloud_auth", false, "disable gcloud auth")
 )
 

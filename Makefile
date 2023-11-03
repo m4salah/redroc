@@ -54,6 +54,15 @@ run-server: build-server
 	cd apps/server && ../../bin/server -listen_port 8080               \
 		-skip_gcloud_auth 		  true
 
+build-migrator:
+	go build -ldflags "-X main.release=$(RELEASE)" -o bin/migrator apps/migrator/main.go
+
+run-migrator-up: build-migrator
+	cd apps/migrator && ../../bin/migrator up
+
+run-migrator-down: build-migrator
+	cd apps/migrator && ../../bin/migrator down
+
 run-all: 
 	make -j 5 run-download run-upload run-search run-server run-frontend
 
@@ -171,6 +180,7 @@ mod-tidy:
 	cd apps/upload && go mod tidy
 	cd apps/search && go mod tidy
 	cd apps/server && go mod tidy
+	cd apps/migrator && go mod tidy
 	cd libs/util && go mod tidy
 	cd libs/storage && go mod tidy
 
