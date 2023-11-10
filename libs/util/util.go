@@ -8,7 +8,6 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"fmt"
 	"image"
 	"image/gif"
@@ -40,9 +39,17 @@ func LoadConfig[Config any](c *Config) error {
 }
 
 func InitializeSlog(env, release string) {
-	logHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}).WithAttrs([]slog.Attr{
+	// common attributes attached to every log
+	slogAttr := []slog.Attr{
 		slog.Group("environment", slog.String("release", release), slog.String("env", env)),
-	})
+	}
+
+	var logHandler slog.Handler
+	if env == LOCALENV {
+		logHandler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}).WithAttrs(slogAttr)
+	} else {
+		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}).WithAttrs(slogAttr)
+	}
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
 }
@@ -64,20 +71,8 @@ func GetPhoto(r *http.Request) ([]byte, string, error) {
 }
 
 // GetTags function tries to read and decode photo tags from the request.
-func GetTags(r *http.Request) ([]string, error) {
-	var tags []string
-
-	data := r.FormValue("hashtags")
-	if len(data) == 0 {
-		return tags, nil
-	}
-
-	err := json.Unmarshal([]byte(data), &tags)
-	if err != nil {
-		return nil, err
-	}
-
-	return tags, nil
+func GetTags(r *http.Request) string {
+	return r.FormValue("hashtags")
 }
 
 func MakeThumbnail(photo []byte, width, height uint) ([]byte, error) {
