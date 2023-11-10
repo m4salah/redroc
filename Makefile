@@ -45,14 +45,13 @@ build-search:
 	go build -ldflags "-X main.release=$(RELEASE)" -o bin/search apps/search/main.go
 	
 run-search: build-search
-	cd apps/search && ../../bin/search -listen_port 8083
+	cd apps/search && ../../bin/search -storage_dry_run true
 
 build-server:
 	go build -ldflags "-X main.release=$(RELEASE)" -o bin/server apps/server/cmd/main.go
 
 run-server: build-server
-	cd apps/server && ../../bin/server -listen_port 8080               \
-		-skip_gcloud_auth 		  true
+	cd apps/server && ../../bin/server -skip_gcloud_auth true
 
 build-migrator:
 	go build -ldflags "-X main.release=$(RELEASE)" -o bin/migrator apps/migrator/main.go
@@ -127,7 +126,7 @@ deploy-download: docker-push-download
 
 # docker command for upload.
 docker-build-upload:
-	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-upload -f Dockerfile.upload-grpc .
+	docker build --build-arg RELEASE_ARG=$(RELEASE) -t redroc-upload -f Dockerfile.upload-server .
 
 docker-run-upload: docker-build-upload
 	docker run -p 8080:8080 redroc-upload:latest
@@ -139,6 +138,7 @@ docker-push-upload: docker-tag-upload
 	docker push gcr.io/$(GOOGLE_PROJECT_ID)/redroc-upload
 
 deploy-upload: docker-push-upload
+	gcloud config set project $(GOOGLE_PROJECT_ID) 
 	gcloud run deploy redroc-upload \
   		--image gcr.io/$(GOOGLE_PROJECT_ID)/redroc-upload \
 		--platform managed \
