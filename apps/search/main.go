@@ -18,9 +18,7 @@ import (
 var release string
 
 var (
-	env                 = flag.String("env", "development", "Env")
 	firestoreLatestPath = flag.String("firestore_latest_path", "latest", "path for storing latest images")
-	listenPort          = flag.Int("listen_port", 8080, "start server on this port")
 	storageDryRun       = flag.Bool("storage_dry_run", false, "disable storage bucket writes")
 	thumbnailCount      = flag.Int("thumbnail_count", 30, "number of thumbnails to return")
 	thumbnailPrefix     = flag.String("thumbnail_prefix", "/download/thumbnail_", "name prefix to use for storing thumbnails")
@@ -44,20 +42,23 @@ func (s *SearchServiceRPC) GetThumbnail(ctx context.Context, request *pb.GetThum
 
 type Config struct {
 	FilestoreProject string `env:"FILESTORE_PROJECT,notEmpty"`
+	Env              string `env:"ENV,notEmpty"`
+	Port             int    `env:"PORT,notEmpty"`
 }
 
 var config Config
 
 func main() {
 	flag.Parse()
-	util.InitializeSlog(*env, release)
+	util.InitializeSlog(config.Env, release)
 
 	// load env variables
 	if err := util.LoadConfig(&config); err != nil {
 		panic(err)
 	}
 
-	filestore, err := storage.NewFilestore(storage.NewFilestoreOptions{ProjectID: config.FilestoreProject,
+	filestore, err := storage.NewFilestore(storage.NewFilestoreOptions{
+		ProjectID:       config.FilestoreProject,
 		FilestoreLatest: *firestoreLatestPath,
 		ThumbnailPerfix: *thumbnailPrefix,
 	})
@@ -66,16 +67,16 @@ func main() {
 		fmt.Println("Error initilizing filestore", err)
 		return
 	}
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", *listenPort))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Port))
 	if err != nil {
-		slog.Error("failed to listen", slog.Int("port", *listenPort), slog.String("error", err.Error()))
+		slog.Error("failed to listen", slog.Int("port", config.Port), "error", err)
 		return
 	}
 	grpcServer := grpc.NewServer()
 	pb.RegisterGetThumbnailServer(grpcServer, &SearchServiceRPC{MetadataDB: filestore})
 
-	slog.Info("starting GRPC server", slog.Int("port", *listenPort))
+	slog.Info("starting GRPC server", slog.Int("port", config.Port))
 	if err := grpcServer.Serve(listener); err != nil {
-		slog.Error("Failed to serve", slog.Int("port", *listenPort))
+		slog.Error("Failed to serve", slog.Int("port", config.Port))
 	}
 }
