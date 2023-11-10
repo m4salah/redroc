@@ -18,7 +18,7 @@ import (
 var release string
 
 var (
-	env           = flag.String("env", "development", "Env")
+	env           = flag.String("env", util.LOCALENV, "Env")
 	listenPort    = flag.Int("listen_port", 8080, "start server on this port")
 	storageDryRun = flag.Bool("storage_dry_run", false, "disable storage bucket reads")
 )
