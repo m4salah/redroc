@@ -4,9 +4,9 @@ go 1.21
 
 replace (
 	github.com/m4salah/redroc/libs/proto => ../../libs/proto
+	github.com/m4salah/redroc/libs/pubsub => ../../libs/pubsub
 	github.com/m4salah/redroc/libs/storage => ../../libs/storage
 	github.com/m4salah/redroc/libs/util => ../../libs/util
-	github.com/m4salah/redroc/libs/pubsub => ../../libs/pubsub
 )
 
 require (
