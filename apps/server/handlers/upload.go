@@ -8,10 +8,11 @@ import (
 	"path"
 	"time"
 
+	"cloud.google.com/go/pubsub"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/m4salah/redroc/apps/server/types"
 	"github.com/m4salah/redroc/libs/util"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
 	pb "github.com/m4salah/redroc/libs/proto"
@@ -129,7 +130,7 @@ func pingTriggerImageUploaded(backendTimeout time.Duration,
 	return imageUploaded, nil
 }
 
-func Upload(mux chi.Router, backendAddr string, backendTimeout time.Duration, skipAuth bool) {
+func Upload(mux chi.Router, config types.Config) {
 	mux.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, _4MB)
 		_, _, err := r.FormFile("file")
@@ -147,72 +148,49 @@ func Upload(mux chi.Router, backendAddr string, backendTimeout time.Duration, sk
 		// Get the username
 		username := r.FormValue("username")
 		if username == "" {
-			slog.Error("username must be provided", slog.String("error", err.Error()))
+			slog.Error("username must be provided", slog.Any("error", err))
 			http.Error(w, "username must be provided", http.StatusBadRequest)
 			return
 		}
 
 		// Get the hashtags
-		hashtags, err := util.GetTags(r)
-		if err != nil {
-			slog.Error("getting tags failes", slog.String("error", err.Error()))
-			http.Error(w, "invalid tags", http.StatusBadRequest)
-			return
-
-		}
+		hashtags := r.FormValue("hashtags")
 
 		// Access the array of strings using the field name
-		blob, filename, err := util.GetPhoto(r)
+		bolb, filename, err := util.GetPhoto(r)
 		if err != nil {
-			slog.Error("getting file failed", slog.String("error", err.Error()))
+			slog.Error("getting file failed", slog.Any("error", err))
 			http.Error(w, "getting file failed", http.StatusBadRequest)
 			return
 		}
 
 		objName := uuid.New().String() + path.Ext(filename)
 
-		eg := new(errgroup.Group)
-
-		// uploading image
-		eg.Go(func() error {
-			slog.Info("uploading image", slog.String("imageName", objName))
-			uploadRequest := &pb.UploadImageRequest{ObjName: objName, Image: blob}
-			_, err = pingUploadRequestWithAuth(backendTimeout, backendAddr, uploadRequest, util.ExtractServiceURL(backendAddr), skipAuth)
-			return err
-		})
-
-		// writing the metadata
-		eg.Go(func() error {
-			slog.Info("writing metadata for image",
-				slog.String("imageName", objName),
-				slog.String("username", username),
-				slog.Any("hashtags", hashtags))
-
-			metadataRequest := &pb.CreateMetadataRequest{
-				ObjName: objName, User: username, Hashtags: hashtags}
-
-			_, err = pingCreateMetadataRequestWithAuth(backendTimeout, backendAddr, metadataRequest, util.ExtractServiceURL(backendAddr), skipAuth)
-			return err
-		})
-
-		if err := eg.Wait(); err != nil {
-			slog.Error("error while uploading or creating metadata", "error", err)
+		// publish image upload message
+		ctx := context.Background()
+		client, err := pubsub.NewClient(ctx, config.ProjectID)
+		if err != nil {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
+		defer client.Close()
 
-		slog.Info("image Uploaded Successfully",
-			slog.String("imageName", objName),
-			slog.String("username", username),
-			slog.Any("hashtags", hashtags))
+		t := client.Topic(config.TopicID)
+		result := t.Publish(ctx, &pubsub.Message{
+			Data: bolb,
+			Attributes: map[string]string{
+				"objName":  objName,
+				"hashtags": hashtags,
+				"user":     username,
+			},
+		})
 
-		// Trigger the ImageUploaded event
-		go pingTriggerImageUploaded(backendTimeout, backendAddr, &pb.ImageUploadedRequest{
-			ObjName:  objName,
-			User:     username,
-			Hashtags: hashtags,
-		}, util.ExtractServiceURL(backendAddr), skipAuth)
-
-		fmt.Fprintln(w, "image Uploaded Successfully")
+		// Block until the result is returned and a server-generated
+		// ID is returned for the published message.
+		if _, err := result.Get(ctx); err != nil {
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprintf(w, "image with name %s scheduled for upload successfully \n", objName)
 	})
 }

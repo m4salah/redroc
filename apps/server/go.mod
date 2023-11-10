@@ -9,6 +9,7 @@ replace (
 )
 
 require (
+	cloud.google.com/go/pubsub v1.33.0
 	cloud.google.com/go/storage v1.32.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/google/uuid v1.3.1

@@ -13,8 +13,8 @@ func (s *Server) setupRoutes() {
 	// Handlers
 	handlers.Home(s.mux)
 	handlers.Health(s.mux)
-	handlers.Download(s.mux, s.downloadBackendAddr, s.connTimeout, s.skipGcloudAuth)
-	handlers.Upload(s.mux, s.uploadBackendAddr, s.connTimeout, s.skipGcloudAuth)
-	handlers.Search(s.mux, s.searchBackendAddr, s.connTimeout, s.skipGcloudAuth)
+	handlers.Download(s.mux, s.config.DownloadBackendAddr, s.connTimeout, s.skipGcloudAuth)
+	handlers.Upload(s.mux, s.config)
+	handlers.Search(s.mux, s.config.SearchBackendAddr, s.connTimeout, s.skipGcloudAuth)
 	handlers.SocketIO(s.mux)
 }
