@@ -14,4 +14,4 @@ FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /bin/search /bin/search
 
-ENTRYPOINT ["/bin/search", "-listen_port", "8080", "-thumbnail_count", "30"]
+ENTRYPOINT ["/bin/search", "-thumbnail_count", "30"]
