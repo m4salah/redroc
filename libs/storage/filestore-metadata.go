@@ -44,7 +44,7 @@ func NewFilestore(opts NewFilestoreOptions) (*FilestoreMetadata, error) {
 }
 
 func (f *FilestoreMetadata) StorePath(ctx context.Context, path string, timestamp int64) error {
-	slog.Info("Storing metadata Path")
+	slog.Info("Storing metadata Path", slog.String("path", path))
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
 		slog.Error("firestore client failed", slog.String("error", err.Error()))
@@ -57,13 +57,17 @@ func (f *FilestoreMetadata) StorePath(ctx context.Context, path string, timestam
 		"uploaded_time": timestamp,
 	})
 	if err != nil {
+		slog.Error("error while storing path",
+			slog.Int64("timestamp", timestamp),
+			slog.String("path", path),
+			slog.Any("error", err))
 		return fmt.Errorf("firestore create failed for %s: %v", path, err)
 	}
 	return nil
 }
 
 func (f *FilestoreMetadata) StorePathWithUser(ctx context.Context, user, path string, timestamp int64) error {
-	slog.Info("Storing metadata Path with user")
+	slog.Info("Storing metadata Path with user", slog.String("user", user), slog.String("path", path))
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
 		slog.Error("firestore client failed", slog.String("error", err.Error()))
@@ -77,16 +81,22 @@ func (f *FilestoreMetadata) StorePathWithUser(ctx context.Context, user, path st
 		"user":          user,
 	})
 	if err != nil {
+		slog.Error("error while storing path with user",
+			"user", user,
+			slog.Int64("timestamp", timestamp),
+			slog.String("path", path),
+			slog.Any("error", err))
 		return fmt.Errorf("firestore create failed for %s: %v", path, err)
 	}
 	return nil
 }
 
 func (f *FilestoreMetadata) StoreLatest(ctx context.Context, index uint32, latest, objName string) error {
-	slog.Info("Storing metadata Latest")
+	slog.Info("Storing metadata Latest", "latestIndex", index, slog.String("objName", objName))
+
 	client, err := firestore.NewClient(ctx, f.projectID)
 	if err != nil {
-		slog.Error("firestore client failed", slog.String("error", err.Error()))
+		slog.Error("firestore client failed", "error", err)
 		return err
 	}
 	defer client.Close()
@@ -96,7 +106,12 @@ func (f *FilestoreMetadata) StoreLatest(ctx context.Context, index uint32, lates
 		"obj_name": objName,
 	})
 	if err != nil {
-		return fmt.Errorf("firestore create failed for %s: %v", objName, err)
+		slog.Error("error while storing latest",
+			"latestIndex", index,
+			slog.String("objName", objName),
+			slog.String("idPath", id),
+			slog.Any("error", err))
+		return fmt.Errorf("firestore create latest failed for %s: %v", objName, err)
 	}
 	return nil
 }
