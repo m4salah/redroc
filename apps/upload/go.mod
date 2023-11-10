@@ -6,15 +6,15 @@ replace (
 	github.com/m4salah/redroc/libs/proto => ../../libs/proto
 	github.com/m4salah/redroc/libs/storage => ../../libs/storage
 	github.com/m4salah/redroc/libs/util => ../../libs/util
+	github.com/m4salah/redroc/libs/pubsub => ../../libs/pubsub
 )
 
 require (
 	github.com/gorilla/websocket v1.5.0
-	github.com/m4salah/redroc/libs/proto v0.0.0-00010101000000-000000000000
+	github.com/m4salah/redroc/libs/pubsub v0.0.0-20231104230943-70edc65d8807
 	github.com/m4salah/redroc/libs/storage v0.0.0-00010101000000-000000000000
 	github.com/m4salah/redroc/libs/util v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.3.0
-	google.golang.org/grpc v1.57.0
 )
 
 require (
@@ -52,5 +52,6 @@ require (
 	google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230803162519-f966b187b2e5 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
+	google.golang.org/grpc v1.57.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )
