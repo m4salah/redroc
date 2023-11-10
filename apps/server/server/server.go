@@ -11,40 +11,33 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/m4salah/redroc/apps/server/types"
 )
 
 type Server struct {
-	mux                 chi.Router
-	server              *http.Server
-	listenAddr          string
-	downloadBackendAddr string
-	uploadBackendAddr   string
-	searchBackendAddr   string
-	connTimeout         time.Duration
-	skipGcloudAuth      bool
+	mux            chi.Router
+	server         *http.Server
+	listenAddr     string
+	connTimeout    time.Duration
+	skipGcloudAuth bool
+	config         types.Config
 }
 
 type Options struct {
-	Host                string
-	Port                int
-	DownloadBackendAddr string
-	UploadBackendAddr   string
-	SearchBackendAddr   string
-	ConnTimeout         time.Duration
-	SkipGcloudAuth      bool
+	ConnTimeout    time.Duration
+	SkipGcloudAuth bool
+	ServerConfig   types.Config
 }
 
 func New(opts Options) *Server {
-	address := net.JoinHostPort(opts.Host, strconv.Itoa(opts.Port))
+	address := net.JoinHostPort(opts.ServerConfig.Host, strconv.Itoa(opts.ServerConfig.Port))
 	mux := chi.NewMux()
 	return &Server{
-		downloadBackendAddr: opts.DownloadBackendAddr,
-		uploadBackendAddr:   opts.UploadBackendAddr,
-		searchBackendAddr:   opts.SearchBackendAddr,
-		listenAddr:          address,
-		mux:                 mux,
-		connTimeout:         opts.ConnTimeout,
-		skipGcloudAuth:      opts.SkipGcloudAuth,
+		listenAddr:     address,
+		mux:            mux,
+		connTimeout:    opts.ConnTimeout,
+		skipGcloudAuth: opts.SkipGcloudAuth,
+		config:         opts.ServerConfig,
 		server: &http.Server{
 			Addr:              address,
 			Handler:           mux,
