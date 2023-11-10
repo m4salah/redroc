@@ -2,6 +2,7 @@ package socketio
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"sync"
 
@@ -32,11 +33,11 @@ func (m *Manager) ServeWS(w http.ResponseWriter, r *http.Request) {
 
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		slog.Error("error while upgrading to ws", "error", err)
 		return
 	}
 
-	log.Println("new connection from", c.RemoteAddr().String())
+	slog.Info("new connection from", slog.String("remoteAddr", c.RemoteAddr().String()))
 
 	client := NewClient(c, m)
 
