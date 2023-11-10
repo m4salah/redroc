@@ -2,11 +2,13 @@
 
 - Scalabale image service that allow users download, search, and upload images.
 - Support for Encryption when uploading image, Decryption when downloading image.
+- pub/sub when uploading image
 
 ## The Stack
+
 - Golang/Chi mux, gRPC for the backend.
 - NextJS for the frontend
-- GCP (Google Cloud Platform) for deploying the backend services.
+- GCP (Google Cloud Platform) (Cloud Run, Firestore, Cloud Storage, Pub/Sub) for deploying the backend services.
 - Vercel for deploying the frontend.
 - Explore Bazel with this project.
 
@@ -17,6 +19,7 @@ Rename .env.example to .env and fill the correct values.
 ## TODO
 
 - DONE: make encryption/decryption key read from env variable
+- DONE: Pub/Sub when uploading image
 
 ## Services
 
@@ -61,6 +64,8 @@ Used Technologies: Golang, and Chi mux for handling routs.
 ```
 
 - Upload Image
+
+This trigger pub/sub service.
 
 ```bash
     POST /upload
