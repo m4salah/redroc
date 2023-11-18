@@ -2,7 +2,7 @@ package socketio
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/gorilla/websocket"
 )
@@ -34,13 +34,13 @@ func (c *Client) readMessages() {
 		mt, payload, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Println("error reading message", err)
+				slog.Error("error reading message", "error", err)
 			}
 			break
 		}
 
 		for wsclient := range c.manager.clients {
-			fmt.Println("sending message to client", wsclient.conn.RemoteAddr().String())
+			slog.Info("sending message to client", "addr", wsclient.conn.RemoteAddr().String())
 			wsclient.egress <- payload
 		}
 		fmt.Println(mt, string(payload))
@@ -58,14 +58,14 @@ func (c *Client) writeMessages() {
 		case message, ok := <-c.egress:
 			if !ok {
 				if err := c.conn.WriteMessage(websocket.CloseMessage, nil); err != nil {
-					log.Println("error writing close message", err)
+					slog.Error("error writing close message", "error", err)
 				}
 			}
 
 			if err := c.conn.WriteMessage(websocket.TextMessage, message); err != nil {
-				log.Println("error writing message", err)
+				slog.Error("error writing message", "error", err)
 			}
-			log.Println("message sent", string(message))
+			slog.Info("message sent", slog.String("message", string(message)))
 		}
 	}
 }
