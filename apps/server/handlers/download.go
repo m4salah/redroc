@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 // This token has a 1 hour expiry and should be reused.
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
 func pingDownloadRequestWithAuth(backendTimeout time.Duration,
-	backendAddr string,
+	backendAddr net.Addr,
 	p *pb.DownloadPhotoRequest,
 	audience string,
 	skipAuth bool) (*pb.DownloadPhotoResponse, error) {
@@ -27,7 +28,7 @@ func pingDownloadRequestWithAuth(backendTimeout time.Duration,
 	if err != nil {
 		slog.Error("failed to load system root CA cert pool")
 	}
-	conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(creds))
+	conn, err := grpc.Dial(backendAddr.String(), grpc.WithTransportCredentials(creds))
 
 	if err != nil {
 		slog.Error("Cannot dial to grpc service", slog.String("error", err.Error()))
@@ -48,7 +49,7 @@ func pingDownloadRequestWithAuth(backendTimeout time.Duration,
 	return client.Download(ctx, p, grpc.WaitForReady(true))
 }
 
-func Download(mux chi.Router, backendAddr string, backendTimeout time.Duration, skipAuth bool) {
+func Download(mux chi.Router, backendAddr net.Addr, backendTimeout time.Duration, skipAuth bool) {
 	mux.Get("/download/{imgName}", func(w http.ResponseWriter, r *http.Request) {
 		imgName := chi.URLParam(r, "imgName")
 

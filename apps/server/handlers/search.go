@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 // This token has a 1 hour expiry and should be reused.
 // audience must be the auto-assigned URL of a Cloud Run service or HTTP Cloud Function without port number.
 func pingSearchRequestWithAuth(backendTimeout time.Duration,
-	backendAddr string,
+	backendAddr net.Addr,
 	p *pb.GetThumbnailImagesRequest,
 	audience string,
 	skipAuth bool) (*pb.GetThumbnailImagesResponse, error) {
@@ -28,7 +29,7 @@ func pingSearchRequestWithAuth(backendTimeout time.Duration,
 		slog.Error("failed to load system root CA cert pool")
 	}
 
-	conn, err := grpc.Dial(backendAddr, grpc.WithTransportCredentials(creds))
+	conn, err := grpc.Dial(backendAddr.String(), grpc.WithTransportCredentials(creds))
 
 	if err != nil {
 		slog.Error("Cannot dial to grpc service", slog.String("error", err.Error()))
@@ -49,7 +50,7 @@ func pingSearchRequestWithAuth(backendTimeout time.Duration,
 	return client.GetThumbnail(ctx, p, grpc.WaitForReady(true))
 }
 
-func Search(mux chi.Router, backendAddr string, backendTimeout time.Duration, skipAuth bool) {
+func Search(mux chi.Router, backendAddr net.Addr, backendTimeout time.Duration, skipAuth bool) {
 	mux.Get("/search", func(w http.ResponseWriter, r *http.Request) {
 		// get the query string
 		q := r.URL.Query().Get("q")

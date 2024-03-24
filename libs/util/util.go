@@ -15,6 +15,7 @@ import (
 	"image/png"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"reflect"
@@ -30,12 +31,25 @@ import (
 	grpcMetadata "google.golang.org/grpc/metadata"
 )
 
+// custom parser for parsing string into net.Addr
+// compatible with env.ParserFunc
+func parseNetAddr(value string) (interface{}, error) {
+	addr, err := net.ResolveTCPAddr("tcp", value)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse address: %w", err)
+	}
+	return addr, nil
+}
+
 // Builds config - error handling omitted fore brevity
 func LoadConfig[Config any](c *Config) error {
 	// Loading the environment variables from '.env' file.
 	// ignore the error because on the server we will the env variable from the OS Environment
 	godotenv.Load()
-	return env.ParseWithOptions(c, env.Options{RequiredIfNoDef: true}) // 👈 Parse environment variables into `Config`
+
+	return env.ParseWithOptions(c, env.Options{RequiredIfNoDef: true, FuncMap: map[reflect.Type]env.ParserFunc{
+		reflect.TypeOf((*net.Addr)(nil)).Elem(): parseNetAddr,
+	}}) // 👈 Parse environment variables into `Config`
 }
 
 func InitializeSlog(env, release string) {
@@ -122,8 +136,8 @@ func GetAuthContext(ctx context.Context, audience string, skipAuth bool) (contex
 	return ctx, nil
 }
 
-func ExtractServiceURL(addr string) string {
-	return "https://" + strings.Split(addr, ":")[0]
+func ExtractServiceURL(addr net.Addr) string {
+	return "https://" + strings.Split(addr.String(), ":")[0]
 }
 
 // CreateTransportCredentials creates a new TLS credentials instance with the system root CA pool.
