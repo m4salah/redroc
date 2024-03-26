@@ -33,7 +33,7 @@ import (
 
 // custom parser for parsing string into net.Addr
 // compatible with env.ParserFunc
-func parseNetAddr(value string) (interface{}, error) {
+func parseNetAddr(value string) (any, error) {
 	addr, err := net.ResolveTCPAddr("tcp", value)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse address: %w", err)
@@ -44,7 +44,7 @@ func parseNetAddr(value string) (interface{}, error) {
 // Builds config - error handling omitted fore brevity
 func LoadConfig[Config any](c *Config) error {
 	// Loading the environment variables from '.env' file.
-	// ignore the error because on the server we will the env variable from the OS Environment
+	// ignore the error because on the server we will use the env variables from the OS Environment
 	godotenv.Load()
 
 	return env.ParseWithOptions(c, env.Options{RequiredIfNoDef: true, FuncMap: map[reflect.Type]env.ParserFunc{
