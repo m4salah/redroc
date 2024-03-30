@@ -20,7 +20,7 @@ pub async fn search(
 ) -> Result<Response, StatusCode> {
     // TODO: We need a way to handle the error better
     // TODO: We need to make this url into env variable
-    let mut client = GetThumbnailClient::connect(app_state.config.search_backend_addr)
+    let mut client = GetThumbnailClient::connect(app_state.config.search_backend_addr.to_string())
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let request = tonic::Request::new(GetThumbnailImagesRequest {

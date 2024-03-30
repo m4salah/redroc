@@ -13,9 +13,10 @@ pub async fn get_img(
     // TODO: We need a way to handle the error better
     // TODO: We need to make this url into env variable
     tracing::info!("Downloading image with name {}", img_name.as_str());
-    let mut client = DownloadPhotoClient::connect(app_state.config.download_backend_addr)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let mut client =
+        DownloadPhotoClient::connect(app_state.config.download_backend_addr.to_string())
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let request = tonic::Request::new(DownloadPhotoRequest {
         img_name: img_name.clone(),
     });
