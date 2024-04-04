@@ -18,11 +18,15 @@ pub async fn search(
     State(app_state): State<AppState>,
     Query(params): Query<Params>,
 ) -> Result<Response, StatusCode> {
+    tracing::info!("params passed for search: {:?}", params);
     // TODO: We need a way to handle the error better
     // TODO: We need to make this url into env variable
     let mut client = GetThumbnailClient::connect(app_state.config.search_backend_addr.to_string())
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|e| {
+            tracing::error!("error while connecting to search grpc service: {e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
     let request = tonic::Request::new(GetThumbnailImagesRequest {
         search_keyword: params.query,
     });
