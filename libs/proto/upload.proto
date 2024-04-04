@@ -1,11 +1,12 @@
 syntax = "proto3";
 
 package grpc;
+
 option go_package = "github.com/m4slah/redroc/lib/proto";
 
 message UploadImageRequest {
-    string obj_name = 1;
-    bytes image = 2;
+  string obj_name = 1;
+  bytes image = 2;
 }
 message UploadImageResponse {}
 
@@ -23,7 +24,6 @@ message ImageUploadedRequest {
 }
 message ImageUploadedResponse {}
 service UploadPhoto {
-
   /*
    * RPC for upload a photo to the image database
    */

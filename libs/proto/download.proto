@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package grpc;
+
 option go_package = "github.com/m4slah/redroc/lib/proto";
 
 // when a user requests to download, we'll need the photo_uid to get the full
