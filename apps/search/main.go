@@ -30,6 +30,7 @@ type SearchServiceRPC struct {
 }
 
 func (s *SearchServiceRPC) GetThumbnail(ctx context.Context, request *pb.GetThumbnailImagesRequest) (*pb.GetThumbnailImagesResponse, error) {
+	slog.Info("receiving search request with params", slog.String("q", request.SearchKeyword))
 	if *storageDryRun {
 		return &pb.GetThumbnailImagesResponse{}, nil
 	}
