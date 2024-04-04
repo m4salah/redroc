@@ -181,7 +181,7 @@ func main() {
 	util.InitializeSlog(config.Env, release)
 
 	// pubsub code
-	http.HandleFunc("/upload", UploadImage)
+	http.HandleFunc("/upload", uploadImage)
 
 	slog.Info("starting server", slog.Int("port", *listenPort))
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", *listenPort), nil); err != nil {
@@ -189,8 +189,8 @@ func main() {
 	}
 }
 
-// UploadImage receives and processes a Pub/Sub push message.
-func UploadImage(w http.ResponseWriter, r *http.Request) {
+// uploadImage receives and processes a Pub/Sub push message.
+func uploadImage(w http.ResponseWriter, r *http.Request) {
 	var m pubsub.UploadMessage
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
