@@ -9,10 +9,6 @@ use handlers::router;
 mod config;
 mod handlers;
 
-#[derive(Clone)]
-pub struct AppState {
-    config: Config,
-}
 #[tokio::main]
 async fn main() {
     // Get the env variables from the .env file found in the app directory not the root directory
