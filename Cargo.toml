@@ -22,6 +22,9 @@ tower-http = { version = "0.4.4", features = ["full"] }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "json"] }
 
+[lib]
+path = "apps/server-rs/src/lib.rs"
+
 [[bin]]
 name = "server"
 path = "apps/server-rs/src/main.rs"

@@ -1,5 +1,8 @@
-use axum::response::IntoResponse;
+use axum::{response::IntoResponse, routing::get};
 
-pub async fn health() -> impl IntoResponse {
+pub fn router() -> axum::Router {
+    axum::Router::new().route("/health", get(health))
+}
+async fn health() -> impl IntoResponse {
     String::from("healthy!")
 }

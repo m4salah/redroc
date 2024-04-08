@@ -1,10 +1,10 @@
 use std::{env, net::SocketAddr};
 
-use axum::{routing::get, Router};
 use clap::Parser;
 use config::Config;
-use handlers::{download, health, index, search};
 use tower_http::trace::TraceLayer;
+
+use handlers::router;
 
 mod config;
 mod handlers;
@@ -44,13 +44,7 @@ async fn main() {
         config: config.clone(),
     };
 
-    let app = Router::new()
-        .route("/", get(index))
-        .route("/health", get(health))
-        .route("/download/:img_name", get(download::get_img))
-        .route("/search", get(search::search))
-        .with_state(app_state)
-        .layer(tracing_layer);
+    let app = router(app_state).layer(tracing_layer);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     tracing::info!("listening on {}", addr);

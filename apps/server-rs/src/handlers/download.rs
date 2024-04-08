@@ -1,12 +1,19 @@
+use crate::handlers::grpc::download_photo_client::DownloadPhotoClient;
+use crate::handlers::grpc::DownloadPhotoRequest;
 use crate::AppState;
 
-use super::grpc::download_photo_client::DownloadPhotoClient;
-use super::grpc::DownloadPhotoRequest;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use axum::routing::get;
 
-pub async fn get_img(
+pub fn router(app_state: AppState) -> axum::Router {
+    axum::Router::new()
+        .route("/download/:img_name", get(get_img))
+        .with_state(app_state)
+}
+
+async fn get_img(
     State(app_state): State<AppState>,
     Path(img_name): Path<String>,
 ) -> Result<Response, StatusCode> {

@@ -1,5 +1,8 @@
-use axum::response::Html;
+use axum::{response::Html, routing::get};
 
-pub async fn index() -> Html<&'static str> {
+pub fn router() -> axum::Router {
+    axum::Router::new().route("/", get(index))
+}
+async fn index() -> Html<&'static str> {
     Html("<h1>Welcome to Redroc</h1>")
 }

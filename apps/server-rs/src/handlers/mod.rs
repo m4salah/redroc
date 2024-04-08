@@ -1,10 +1,18 @@
+use crate::AppState;
+
+mod download;
+mod health;
+mod index;
+mod search;
+
 pub mod grpc {
     tonic::include_proto!("grpc");
 }
-pub use health::health;
-pub use index::index;
 
-pub mod download;
-pub mod health;
-pub mod index;
-pub mod search;
+pub fn router(app_state: AppState) -> axum::Router {
+    axum::Router::new()
+        .nest("/", download::router(app_state.clone()))
+        .nest("/", health::router())
+        .nest("/", index::router())
+        .nest("/", search::router(app_state))
+}

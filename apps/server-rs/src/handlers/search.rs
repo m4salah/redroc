@@ -1,20 +1,27 @@
+use crate::handlers::grpc::get_thumbnail_client::GetThumbnailClient;
+use crate::handlers::grpc::GetThumbnailImagesRequest;
 use crate::AppState;
 
-use super::grpc::get_thumbnail_client::GetThumbnailClient;
-use super::grpc::GetThumbnailImagesRequest;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use axum::routing::get;
 use axum::Json;
 use serde::Deserialize;
 
+pub fn router(app_state: AppState) -> axum::Router {
+    axum::Router::new()
+        .route("/search", get(search))
+        .with_state(app_state)
+}
+
 #[derive(Debug, Deserialize)]
-pub struct Params {
+struct Params {
     #[serde(alias = "q")]
     query: String,
 }
 
-pub async fn search(
+async fn search(
     State(app_state): State<AppState>,
     Query(params): Query<Params>,
 ) -> Result<Response, StatusCode> {
